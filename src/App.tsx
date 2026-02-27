@@ -5,8 +5,10 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { AdminAuthProvider } from "@/admin/contexts/AdminAuthContext";
+import ImpersonationBanner from "@/admin/components/ImpersonationBanner";
 
-// Route-based code splitting — each page is its own chunk
+// Customer pages
 const Home = lazy(() => import("./pages/Home"));
 const Gallery = lazy(() => import("./pages/Gallery"));
 const TemplatePreview = lazy(() => import("./pages/TemplatePreview"));
@@ -21,9 +23,25 @@ const Account = lazy(() => import("./pages/Account"));
 const Pricing = lazy(() => import("./pages/Pricing"));
 const PublishSuccess = lazy(() => import("./pages/PublishSuccess"));
 const NotFound = lazy(() => import("./pages/NotFound"));
-
-// Completely isolated — no shared layout with main site
 const LiveInvite = lazy(() => import("./pages/LiveInvite"));
+
+// Admin pages
+const AdminLogin = lazy(() => import("./admin/pages/AdminLogin"));
+const AdminDashboard = lazy(() => import("./admin/pages/Dashboard"));
+const AdminCustomers = lazy(() => import("./admin/pages/Customers"));
+const AdminCustomerDetail = lazy(() => import("./admin/pages/CustomerDetail"));
+const AdminAddCustomer = lazy(() => import("./admin/pages/AddCustomer"));
+const AdminInvites = lazy(() => import("./admin/pages/Invites"));
+const AdminInviteDetail = lazy(() => import("./admin/pages/InviteDetail"));
+const AdminTemplates = lazy(() => import("./admin/pages/Templates"));
+const AdminTemplateEdit = lazy(() => import("./admin/pages/TemplateEdit"));
+const AdminAddTemplate = lazy(() => import("./admin/pages/AddTemplate"));
+const AdminTransactions = lazy(() => import("./admin/pages/Transactions"));
+const AdminFailedPayments = lazy(() => import("./admin/pages/FailedPayments"));
+const AdminCategories = lazy(() => import("./admin/pages/Categories"));
+const AdminPromoCodes = lazy(() => import("./admin/pages/PromoCodes"));
+const AdminAnnouncements = lazy(() => import("./admin/pages/Announcements"));
+const AdminSettings = lazy(() => import("./admin/pages/Settings"));
 
 const queryClient = new QueryClient();
 
@@ -42,6 +60,7 @@ const App = () => (
       <TooltipProvider>
         <Toaster />
         <Sonner />
+        <ImpersonationBanner />
         <Suspense fallback={<PageLoader />}>
           <BrowserRouter>
             <Routes>
@@ -64,8 +83,26 @@ const App = () => (
               <Route path="/account" element={<Account />} />
               <Route path="/publish-success/:inviteId" element={<PublishSuccess />} />
 
-              {/* Live invite — completely isolated, no site chrome */}
+              {/* Live invite */}
               <Route path="/i/:slug" element={<LiveInvite />} />
+
+              {/* Admin Portal */}
+              <Route path="/admin/login" element={<AdminAuthProvider><AdminLogin /></AdminAuthProvider>} />
+              <Route path="/admin" element={<AdminAuthProvider><AdminDashboard /></AdminAuthProvider>} />
+              <Route path="/admin/customers" element={<AdminAuthProvider><AdminCustomers /></AdminAuthProvider>} />
+              <Route path="/admin/customers/new" element={<AdminAuthProvider><AdminAddCustomer /></AdminAuthProvider>} />
+              <Route path="/admin/customers/:id" element={<AdminAuthProvider><AdminCustomerDetail /></AdminAuthProvider>} />
+              <Route path="/admin/invites" element={<AdminAuthProvider><AdminInvites /></AdminAuthProvider>} />
+              <Route path="/admin/invites/:id" element={<AdminAuthProvider><AdminInviteDetail /></AdminAuthProvider>} />
+              <Route path="/admin/templates" element={<AdminAuthProvider><AdminTemplates /></AdminAuthProvider>} />
+              <Route path="/admin/templates/new" element={<AdminAuthProvider><AdminAddTemplate /></AdminAuthProvider>} />
+              <Route path="/admin/templates/:slug" element={<AdminAuthProvider><AdminTemplateEdit /></AdminAuthProvider>} />
+              <Route path="/admin/transactions" element={<AdminAuthProvider><AdminTransactions /></AdminAuthProvider>} />
+              <Route path="/admin/transactions/failed" element={<AdminAuthProvider><AdminFailedPayments /></AdminAuthProvider>} />
+              <Route path="/admin/categories" element={<AdminAuthProvider><AdminCategories /></AdminAuthProvider>} />
+              <Route path="/admin/promo-codes" element={<AdminAuthProvider><AdminPromoCodes /></AdminAuthProvider>} />
+              <Route path="/admin/announcements" element={<AdminAuthProvider><AdminAnnouncements /></AdminAuthProvider>} />
+              <Route path="/admin/settings" element={<AdminAuthProvider><AdminSettings /></AdminAuthProvider>} />
 
               {/* Catch-all */}
               <Route path="*" element={<NotFound />} />
