@@ -7,6 +7,7 @@ import { api } from '@/services/api';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { TemplateConfig, Invite } from '@/types';
+import TemplateThumbnail from '@/components/TemplateThumbnail';
 
 const Checkout = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -102,8 +103,8 @@ const Checkout = () => {
 
         {/* Template summary */}
         <div className="flex items-center gap-6 p-6 rounded-xl border border-border bg-card mb-8">
-          <div className="w-24 h-32 bg-muted rounded-lg flex items-center justify-center text-xs text-muted-foreground font-body shrink-0">
-            {template.name}
+          <div className="w-24 h-32 rounded-lg overflow-hidden shrink-0 border border-border">
+            <TemplateThumbnail config={template} />
           </div>
           <div className="flex-1">
             <h2 className="font-display font-semibold text-lg">{template.name}</h2>
