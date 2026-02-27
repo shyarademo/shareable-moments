@@ -135,7 +135,7 @@ const Home = () => {
       <section ref={heroRef} className="relative py-20 md:py-32 px-6 overflow-hidden">
         {/* Animated mesh gradient background */}
         <div
-          className="absolute inset-0 opacity-40 animate-mesh-gradient"
+          className="absolute inset-0 opacity-40 dark:opacity-30 animate-mesh-gradient"
           style={{
             backgroundSize: '300% 300%',
             backgroundImage: 'linear-gradient(135deg, hsl(var(--gold) / 0.12), hsl(var(--primary) / 0.08), hsl(var(--accent) / 0.1), hsl(var(--gold) / 0.06))',
@@ -204,7 +204,7 @@ const Home = () => {
           transition={{ duration: 0.6, delay: 0.6 }}
           className="relative z-10 container mt-16"
         >
-          <div className="flex flex-wrap justify-center lg:justify-start gap-0 py-6 px-8 rounded-2xl bg-card/60 backdrop-blur-sm border border-border">
+          <div className="flex flex-wrap justify-center lg:justify-start gap-0 py-6 px-8 rounded-2xl bg-card/60 dark:bg-card/80 backdrop-blur-sm border border-border">
             {[
               { icon: <PartyPopper className="w-5 h-5 text-gold" />, target: 5000, suffix: '+', label: 'Invites Created' },
               { icon: <Users className="w-5 h-5 text-primary" />, target: 50000, suffix: '+', label: 'Guests RSVPed' },
@@ -230,7 +230,7 @@ const Home = () => {
         whileInView="visible"
         viewport={{ once: true, amount: 0.2 }}
         variants={staggerContainer}
-        className="py-20 px-6 bg-accent/30"
+        className="py-20 px-6 bg-muted/40 dark:bg-white/[0.02]"
       >
         <div className="container">
           <motion.h2 variants={fadeUp} transition={{ duration: 0.5 }} className="font-display text-3xl md:text-4xl font-bold text-center mb-4">How It Works</motion.h2>
@@ -332,7 +332,7 @@ const Home = () => {
         whileInView="visible"
         viewport={{ once: true, amount: 0.2 }}
         variants={staggerContainer}
-        className="py-20 px-6 bg-accent/30 overflow-hidden"
+        className="py-20 px-6 bg-muted/40 dark:bg-white/[0.02] overflow-hidden"
       >
         <div className="container">
           <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-20 max-w-5xl mx-auto">
@@ -411,7 +411,7 @@ const Home = () => {
         whileInView="visible"
         viewport={{ once: true, amount: 0.2 }}
         variants={staggerContainer}
-        className="py-20 px-6 bg-accent/30"
+        className="py-20 px-6 bg-muted/40 dark:bg-white/[0.02]"
       >
         <div className="container">
           <motion.h2 variants={fadeUp} transition={{ duration: 0.5 }} className="font-display text-3xl md:text-4xl font-bold text-center mb-4">Why Shyara</motion.h2>
@@ -472,7 +472,7 @@ const Home = () => {
         whileInView="visible"
         viewport={{ once: true, amount: 0.2 }}
         variants={staggerContainer}
-        className="py-20 px-6 bg-accent/30"
+        className="py-20 px-6 bg-muted/40 dark:bg-white/[0.02]"
       >
         <div className="container">
           <motion.h2 variants={fadeUp} transition={{ duration: 0.5 }} className="font-display text-3xl md:text-4xl font-bold text-center mb-4">Loved by Thousands</motion.h2>
@@ -480,7 +480,7 @@ const Home = () => {
           <motion.div variants={staggerContainer} className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
             {testimonials.map(t => (
               <motion.div key={t.name} variants={fadeUp} transition={{ duration: 0.4 }} className="p-6 bg-card rounded-xl border border-border relative">
-                <Quote className="absolute top-4 right-4 w-8 h-8 text-muted/40" />
+                <Quote className="absolute top-4 right-4 w-8 h-8 text-muted-foreground/20" />
                 <div className="text-gold text-sm mb-3">{'★'.repeat(t.stars)}</div>
                 <p className="text-muted-foreground font-body text-sm leading-relaxed mb-5 italic">"{t.quote}"</p>
                 <div className="flex items-center gap-3">
@@ -540,7 +540,7 @@ const Home = () => {
         viewport={{ once: true, amount: 0.3 }}
         variants={fadeUp}
         transition={{ duration: 0.6 }}
-        className="py-24 px-6 text-center bg-accent/30"
+        className="py-24 px-6 text-center bg-muted/40 dark:bg-white/[0.02]"
       >
         <div className="max-w-2xl mx-auto">
           <h2 className="font-display text-3xl md:text-4xl font-bold mb-4">Ready to create something beautiful?</h2>
@@ -650,7 +650,7 @@ const TemplateCard = ({ t }: { t: TemplateConfig }) => (
           {t.isPremium ? `₹${t.price}` : 'Free'}
         </span>
       </div>
-      <div className="absolute inset-0 bg-foreground/0 group-hover:bg-foreground/40 transition-colors duration-300 flex items-center justify-center gap-3 opacity-0 group-hover:opacity-100 z-10">
+      <div className="absolute inset-0 bg-foreground/0 group-hover:bg-foreground/40 dark:group-hover:bg-black/50 transition-colors duration-300 flex items-center justify-center gap-3 opacity-0 group-hover:opacity-100 z-10">
         <Button asChild size="sm" variant="secondary" className="text-xs">
           <Link to={`/templates/${t.slug}/preview`}>Preview</Link>
         </Button>
