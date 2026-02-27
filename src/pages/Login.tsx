@@ -74,6 +74,9 @@ const Login = () => {
           <div>
             <Label htmlFor="password" className="font-body text-sm">Password</Label>
             <Input id="password" type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" required className="mt-1.5" />
+            <div className="flex justify-end mt-1.5">
+              <Link to="/forgot-password" className="text-xs text-muted-foreground hover:text-primary font-body transition-colors">Forgot password?</Link>
+            </div>
           </div>
           <Button type="submit" disabled={isLoading} className="w-full h-11 font-body">
             {isLoading ? 'Signing in...' : 'Sign In'}

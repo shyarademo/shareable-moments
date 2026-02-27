@@ -27,7 +27,7 @@ export interface TemplateConfig {
   dummyData: Record<string, any>;
 }
 
-export type InviteStatus = 'draft' | 'published' | 'expired';
+export type InviteStatus = 'draft' | 'published' | 'expired' | 'taken-down';
 
 export interface Invite {
   id: string;
@@ -68,4 +68,5 @@ export interface PublicInviteData {
   templateCategory: EventCategory;
   data: Record<string, any>;
   inviteId: string;
+  status?: InviteStatus;
 }

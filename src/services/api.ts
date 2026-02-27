@@ -69,6 +69,21 @@ const demoInvite: Invite = {
   isPurchased: true,
 };
 
+// Taken-down demo invite
+const takenDownInvite: Invite = {
+  id: 'inv-taken-down',
+  userId: 'system',
+  templateSlug: 'royal-gold',
+  templateCategory: 'wedding',
+  slug: 'taken-down-demo',
+  status: 'taken-down',
+  data: getTemplateBySlug('royal-gold')!.dummyData,
+  createdAt: '2026-01-01T00:00:00Z',
+  updatedAt: '2026-02-20T00:00:00Z',
+  rsvpCount: 5,
+  isPurchased: true,
+};
+
 const mockRsvps: Rsvp[] = [
   { id: 'rsvp-1', inviteId: 'inv-1', name: 'Ananya Patel', response: 'yes', guestCount: 2, message: 'Can\'t wait! So happy for you both! ❤️', submittedAt: '2026-02-05T10:00:00Z' },
   { id: 'rsvp-2', inviteId: 'inv-1', name: 'Rohit Mehra', response: 'yes', guestCount: 4, message: 'Bringing the whole family! Congratulations!', submittedAt: '2026-02-06T14:30:00Z' },
@@ -165,6 +180,16 @@ export const api = {
 
   getPublicInvite: async (slug: string): Promise<PublicInviteData> => {
     await delay(300);
+    // Check taken-down invite first
+    if (slug === 'taken-down-demo') {
+      return {
+        templateSlug: takenDownInvite.templateSlug,
+        templateCategory: takenDownInvite.templateCategory,
+        data: takenDownInvite.data,
+        inviteId: takenDownInvite.id,
+        status: 'taken-down',
+      };
+    }
     const invite = slug === 'demo-invite'
       ? demoInvite
       : mockInvites.find(i => i.slug === slug && i.status === 'published');
@@ -174,6 +199,7 @@ export const api = {
       templateCategory: invite.templateCategory,
       data: invite.data,
       inviteId: invite.id,
+      status: invite.status,
     };
   },
 

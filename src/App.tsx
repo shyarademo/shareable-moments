@@ -15,6 +15,7 @@ const Gallery = lazy(() => import("./pages/Gallery"));
 const TemplatePreview = lazy(() => import("./pages/TemplatePreview"));
 const Login = lazy(() => import("./pages/Login"));
 const Register = lazy(() => import("./pages/Register"));
+const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
 const Checkout = lazy(() => import("./pages/Checkout"));
 const CreateInvite = lazy(() => import("./pages/CreateInvite"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
@@ -75,6 +76,7 @@ const App = () => (
               {/* Auth pages */}
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
 
               {/* Authenticated pages */}
               <Route path="/checkout/:slug" element={<Checkout />} />

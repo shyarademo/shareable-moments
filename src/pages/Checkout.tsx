@@ -8,6 +8,16 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { TemplateConfig, Invite } from '@/types';
 import TemplateThumbnail from '@/components/TemplateThumbnail';
+import { ChevronDown, X, Loader2 } from 'lucide-react';
+
+// Promo codes map
+const PROMO_CODES: Record<string, { type: 'percent' | 'flat'; value: number; label: string }> = {
+  WELCOME10: { type: 'percent', value: 10, label: '10% off' },
+  SHYARA20: { type: 'percent', value: 20, label: '20% off' },
+  FLAT50: { type: 'flat', value: 50, label: '₹50 off' },
+  NEWUSER: { type: 'percent', value: 15, label: '15% off' },
+  SAVE100: { type: 'flat', value: 100, label: '₹100 off' },
+};
 
 const Checkout = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -18,6 +28,13 @@ const Checkout = () => {
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
   const [existingInvite, setExistingInvite] = useState<Invite | null>(null);
+
+  // Promo state
+  const [promoExpanded, setPromoExpanded] = useState(false);
+  const [promoCode, setPromoCode] = useState('');
+  const [promoLoading, setPromoLoading] = useState(false);
+  const [promoError, setPromoError] = useState('');
+  const [appliedPromo, setAppliedPromo] = useState<{ code: string; type: 'percent' | 'flat'; value: number; label: string } | null>(null);
 
   useEffect(() => {
     if (!isAuthenticated && slug) {
@@ -31,15 +48,9 @@ const Checkout = () => {
       try {
         const tmpl = await api.getTemplate(slug);
         setTemplate(tmpl);
-
-        // Purchase lock: check if user already has an invite for this template
         const invites = await api.getInvites();
-        const existing = invites.find(
-          i => i.templateSlug === slug && i.isPurchased
-        );
-        if (existing) {
-          setExistingInvite(existing);
-        }
+        const existing = invites.find(i => i.templateSlug === slug && i.isPurchased);
+        if (existing) setExistingInvite(existing);
       } finally {
         setLoading(false);
       }
@@ -47,20 +58,40 @@ const Checkout = () => {
     init();
   }, [slug, isAuthenticated, navigate, setPendingTemplateSlug]);
 
-  // If already purchased, skip checkout entirely
   useEffect(() => {
     if (existingInvite && !loading) {
-      toast({
-        title: 'Template already purchased!',
-        description: 'Taking you to your invite editor.',
-      });
-      navigate(
-        existingInvite.status === 'draft'
-          ? `/create/${existingInvite.id}`
-          : `/dashboard/invites/${existingInvite.id}/edit`
-      );
+      toast({ title: 'Template already purchased!', description: 'Taking you to your invite editor.' });
+      navigate(existingInvite.status === 'draft' ? `/create/${existingInvite.id}` : `/dashboard/invites/${existingInvite.id}/edit`);
     }
   }, [existingInvite, loading, navigate, toast]);
+
+  const getDiscount = (price: number) => {
+    if (!appliedPromo) return 0;
+    if (appliedPromo.type === 'percent') return Math.round(price * appliedPromo.value / 100);
+    return Math.min(appliedPromo.value, price);
+  };
+
+  const handleApplyPromo = async () => {
+    setPromoError('');
+    setPromoLoading(true);
+    await new Promise(r => setTimeout(r, 800));
+    const upper = promoCode.trim().toUpperCase();
+    const match = PROMO_CODES[upper];
+    if (match) {
+      setAppliedPromo({ code: upper, ...match });
+      setPromoError('');
+    } else {
+      setPromoError('Invalid or expired promo code.');
+    }
+    setPromoLoading(false);
+  };
+
+  const handleRemovePromo = () => {
+    setAppliedPromo(null);
+    setPromoCode('');
+    setPromoExpanded(false);
+    setPromoError('');
+  };
 
   const handleCheckout = async () => {
     if (!template) return;
@@ -86,6 +117,9 @@ const Checkout = () => {
       </div>
     );
   }
+
+  const discount = getDiscount(template.price);
+  const finalPrice = template.price - discount;
 
   return (
     <div className="min-h-screen bg-background">
@@ -138,6 +172,56 @@ const Checkout = () => {
           <div className="p-6 rounded-xl border border-border bg-card mb-8">
             <h3 className="font-display font-semibold mb-4">Payment Details</h3>
             <p className="text-xs text-muted-foreground font-body mb-4">This is a demo — no real payment will be processed.</p>
+
+            {/* Promo code section */}
+            <div className="mb-6">
+              {!appliedPromo ? (
+                <>
+                  <button
+                    onClick={() => setPromoExpanded(!promoExpanded)}
+                    className="flex items-center gap-1.5 text-sm font-body text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    Have a promo code?
+                    <ChevronDown className={`w-4 h-4 transition-transform ${promoExpanded ? 'rotate-180' : ''}`} />
+                  </button>
+                  {promoExpanded && (
+                    <div className="mt-3 flex gap-2">
+                      <Input
+                        value={promoCode}
+                        onChange={e => { setPromoCode(e.target.value); setPromoError(''); }}
+                        placeholder="Enter promo code"
+                        className="flex-1 uppercase"
+                      />
+                      <Button
+                        onClick={handleApplyPromo}
+                        disabled={promoLoading || !promoCode.trim()}
+                        variant="outline"
+                        size="sm"
+                        className="font-body px-4 h-10"
+                      >
+                        {promoLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Apply'}
+                      </Button>
+                    </div>
+                  )}
+                  {promoError && (
+                    <p className="text-xs text-destructive font-body mt-2">{promoError}</p>
+                  )}
+                </>
+              ) : (
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="inline-flex items-center gap-1.5 bg-primary/10 text-primary px-3 py-1.5 rounded-full text-sm font-body font-medium">
+                      {appliedPromo.code}
+                      <button onClick={handleRemovePromo} className="hover:text-destructive transition-colors">
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </span>
+                  </div>
+                  <p className="text-xs text-primary font-body mt-2">✓ Promo code applied — {appliedPromo.label}</p>
+                </div>
+              )}
+            </div>
+
             <div className="space-y-4">
               <div>
                 <Label className="font-body text-sm">Card Number</Label>
@@ -166,8 +250,16 @@ const Checkout = () => {
           <h3 className="font-display font-semibold mb-4">Order Summary</h3>
           <div className="flex justify-between font-body text-sm mb-2">
             <span className="text-muted-foreground">{template.name} template</span>
-            <span className="font-medium">{template.isPremium ? `₹${template.price}` : 'Free'}</span>
+            <span className={`font-medium ${appliedPromo ? 'line-through text-muted-foreground' : ''}`}>
+              {template.isPremium ? `₹${template.price}` : 'Free'}
+            </span>
           </div>
+          {appliedPromo && template.isPremium && (
+            <div className="flex justify-between font-body text-sm mb-2">
+              <span className="text-primary">Promo code ({appliedPromo.code})</span>
+              <span className="text-primary font-medium">-₹{discount}</span>
+            </div>
+          )}
           {template.isPremium && (
             <>
               <div className="flex justify-between font-body text-sm mb-2">
@@ -177,7 +269,7 @@ const Checkout = () => {
               <div className="border-t border-border my-3" />
               <div className="flex justify-between font-body text-sm font-semibold">
                 <span>Total</span>
-                <span className="text-gold">₹{template.price}</span>
+                <span className="text-gold">₹{finalPrice}</span>
               </div>
             </>
           )}
@@ -187,7 +279,7 @@ const Checkout = () => {
           {processing
             ? 'Processing...'
             : template.isPremium
-              ? `Pay ₹${template.price}`
+              ? `Pay ₹${finalPrice}`
               : 'Confirm & Continue'}
         </Button>
 
