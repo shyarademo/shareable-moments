@@ -29,8 +29,8 @@ const QuickPreview = ({ template, open, onOpenChange }: Props) => {
               {template.category.replace('-', ' ')} · {template.isPremium ? `₹${template.price}` : 'Free'}
             </p>
             <div className="flex gap-3 mt-5 justify-center">
-              <Button asChild variant="outline" className="font-body">
-                <Link to={`/templates/${template.slug}/preview`}>Full Preview</Link>
+              <Button variant="outline" className="font-body" asChild>
+                <a href={`/templates/${template.slug}/preview`} target="_blank" rel="noopener noreferrer">Full Preview</a>
               </Button>
               <Button asChild className="font-body">
                 <Link to={`/checkout/${template.slug}`}>Use This Template</Link>

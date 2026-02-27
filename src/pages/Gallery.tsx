@@ -133,8 +133,10 @@ const Gallery = () => {
                   </div>
                   {/* Hover overlay */}
                   <div className="absolute inset-0 bg-foreground/0 group-hover:bg-foreground/40 transition-colors duration-300 flex items-center justify-center gap-3 opacity-0 group-hover:opacity-100 z-10">
-                    <Button size="sm" variant="secondary" className="text-xs" onClick={() => setQuickPreview(t)}>
-                      <Eye className="w-3.5 h-3.5 mr-1" /> Quick Look
+                     <Button size="sm" variant="secondary" className="text-xs" asChild>
+                      <a href={`/templates/${t.slug}/preview`} target="_blank" rel="noopener noreferrer">
+                        <Eye className="w-3.5 h-3.5 mr-1" /> Preview
+                      </a>
                     </Button>
                     <Button asChild size="sm" className="text-xs">
                       <Link to={`/checkout/${t.slug}`}>Use This</Link>
