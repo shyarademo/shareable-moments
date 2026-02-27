@@ -32,6 +32,7 @@ const InviteForm = ({ config, invite, isEditing = false }: InviteFormProps) => {
   const [saving, setSaving] = useState(false);
   const [publishing, setPublishing] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
+  const [showPublishConfirm, setShowPublishConfirm] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -105,7 +106,11 @@ const InviteForm = ({ config, invite, isEditing = false }: InviteFormProps) => {
       toast({ title: 'Please set a URL slug', variant: 'destructive' });
       return;
     }
+    setShowPublishConfirm(true);
+  };
 
+  const confirmPublish = async () => {
+    setShowPublishConfirm(false);
     setPublishing(true);
     try {
       if (isEditing) {
@@ -119,6 +124,7 @@ const InviteForm = ({ config, invite, isEditing = false }: InviteFormProps) => {
           slug,
           eventData: formData,
         });
+        toast({ title: 'Invite published! 🎉', description: 'Your invitation is now live.' });
         navigate(`/publish-success/${result.id}`);
       }
     } catch {
@@ -223,6 +229,36 @@ const InviteForm = ({ config, invite, isEditing = false }: InviteFormProps) => {
           </div>
         </div>
       </div>
+
+      {/* Publish confirmation modal */}
+      {showPublishConfirm && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-foreground/50 backdrop-blur-sm px-4">
+          <div className="bg-card rounded-xl border border-border p-6 max-w-sm w-full shadow-xl animate-scale-in">
+            <div className="text-3xl text-center mb-3">🚀</div>
+            <h3 className="font-display text-lg font-semibold mb-2 text-center">
+              {isEditing ? 'Update & Publish' : 'Publish Invite'}
+            </h3>
+            <p className="text-sm text-muted-foreground font-body mb-2 text-center">
+              {isEditing
+                ? 'Your changes will go live immediately at the same URL.'
+                : 'Your invite will be live and shareable at:'}
+            </p>
+            {!isEditing && slug && (
+              <p className="text-xs text-gold font-body font-medium text-center mb-4 break-all">
+                invite.shyara.co.in/i/{slug}
+              </p>
+            )}
+            <div className="flex gap-3 mt-4">
+              <Button variant="outline" className="flex-1 font-body" onClick={() => setShowPublishConfirm(false)}>
+                Cancel
+              </Button>
+              <Button className="flex-1 font-body" onClick={confirmPublish} disabled={publishing}>
+                {publishing ? 'Publishing...' : 'Confirm & Publish'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
