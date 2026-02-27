@@ -56,7 +56,7 @@ const AdminSidebar: React.FC = () => {
   };
 
   return (
-    <Sidebar collapsible="icon" className="border-r border-sidebar-border" style={{ '--sidebar-background': '220 20% 10%', '--sidebar-foreground': '0 0% 95%', '--sidebar-accent': '220 15% 18%', '--sidebar-accent-foreground': '0 0% 95%', '--sidebar-border': '220 15% 18%' } as React.CSSProperties}>
+    <Sidebar collapsible="icon" className="admin-sidebar border-r border-sidebar-border">
       {/* Logo */}
       <SidebarHeader className="px-4 py-4 border-b border-sidebar-border">
         {collapsed ? (
