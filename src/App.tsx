@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { AdminAuthProvider } from "@/admin/contexts/AdminAuthContext";
 import ImpersonationBanner from "@/admin/components/ImpersonationBanner";
+import { ThemeProvider } from "next-themes";
 
 // Customer pages
 const Home = lazy(() => import("./pages/Home"));
@@ -55,6 +56,7 @@ const PageLoader = () => (
 );
 
 const App = () => (
+  <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
       <TooltipProvider>
@@ -112,6 +114,6 @@ const App = () => (
       </TooltipProvider>
     </AuthProvider>
   </QueryClientProvider>
+  </ThemeProvider>
 );
-
 export default App;

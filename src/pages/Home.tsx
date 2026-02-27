@@ -7,6 +7,7 @@ import { TemplateConfig } from '@/types';
 import TemplateThumbnail from '@/components/TemplateThumbnail';
 import PhoneMockup from '@/components/PhoneMockup';
 import MobileNav from '@/components/MobileNav';
+import ThemeToggle from '@/components/ThemeToggle';
 import { allTemplates, getTemplatesByCategory } from '@/templates/registry';
 import {
   Eye, Sparkles, Smartphone, BarChart3, Link2, Palette, Gift,
@@ -120,9 +121,13 @@ const Home = () => {
             <Link to="/templates" className="text-muted-foreground hover:text-foreground transition-colors">Browse Templates</Link>
             <Link to="/pricing" className="text-muted-foreground hover:text-foreground transition-colors">Pricing</Link>
             <Link to="/login" className="text-muted-foreground hover:text-foreground transition-colors">Login</Link>
+            <ThemeToggle />
             <Button asChild size="sm"><Link to="/templates">Get Started</Link></Button>
           </div>
-          <MobileNav />
+          <div className="flex md:hidden items-center gap-2">
+            <ThemeToggle />
+            <MobileNav />
+          </div>
         </div>
       </nav>
 
