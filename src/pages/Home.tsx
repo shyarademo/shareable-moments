@@ -178,7 +178,7 @@ const Home = () => {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.3 }}
-            className="flex-shrink-0 relative"
+            className="flex-shrink-0 relative lg:ml-12 xl:ml-20"
           >
             {/* Second phone (behind, desktop only) */}
             {floralGarden && (
