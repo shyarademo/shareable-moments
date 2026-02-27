@@ -5,6 +5,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { api } from '@/services/api';
 import { TemplateConfig, EventCategory } from '@/types';
 import { categories } from '@/templates/registry';
+import TemplateThumbnail from '@/components/TemplateThumbnail';
 
 const Gallery = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -109,12 +110,11 @@ const Gallery = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {templates.map(t => (
               <div key={t.slug} className="group rounded-xl border border-border bg-card overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
-                <div className="aspect-[3/4] bg-muted relative overflow-hidden">
-                  <div className="absolute inset-0 flex items-center justify-center text-muted-foreground font-body text-sm">
-                    {t.name}
-                  </div>
+                {/* Thumbnail mockup */}
+                <div className="aspect-[3/4] relative overflow-hidden">
+                  <TemplateThumbnail config={t} />
                   {/* Badges */}
-                  <div className="absolute top-3 left-3 flex gap-2">
+                  <div className="absolute top-3 left-3 flex gap-2 z-10">
                     <span className="px-2.5 py-1 rounded-full text-[10px] font-body font-medium bg-card/90 backdrop-blur-sm border border-border capitalize">
                       {t.category.replace('-', ' ')}
                     </span>
@@ -123,7 +123,7 @@ const Gallery = () => {
                     </span>
                   </div>
                   {/* Hover overlay */}
-                  <div className="absolute inset-0 bg-foreground/0 group-hover:bg-foreground/40 transition-colors duration-300 flex items-center justify-center gap-3 opacity-0 group-hover:opacity-100">
+                  <div className="absolute inset-0 bg-foreground/0 group-hover:bg-foreground/40 transition-colors duration-300 flex items-center justify-center gap-3 opacity-0 group-hover:opacity-100 z-10">
                     <Button asChild size="sm" variant="secondary">
                       <Link to={`/templates/${t.slug}/preview`}>Preview</Link>
                     </Button>
