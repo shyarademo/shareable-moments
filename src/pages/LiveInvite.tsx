@@ -58,7 +58,11 @@ const LiveInvite = () => {
         <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
       </div>
     }>
-      <TemplateRenderer config={config} data={{ ...inviteData.data, slug }} />
+      <TemplateRenderer
+        config={config}
+        data={{ ...inviteData.data, slug }}
+        inviteId={inviteData.inviteId}
+      />
     </Suspense>
   );
 };
