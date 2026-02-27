@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Pencil, Trash2, GripVertical } from 'lucide-react';
+import { Plus, Pencil, Trash2, ArrowUp, ArrowDown } from 'lucide-react';
 
 const Categories: React.FC = () => {
   const { toast } = useToast();
@@ -59,6 +59,31 @@ const Categories: React.FC = () => {
     toast({ title: `Category ${updated.isVisible ? 'shown' : 'hidden'}` });
   };
 
+  const handleMoveUp = async (index: number) => {
+    if (index === 0) return;
+    const newOrder = [...categories];
+    [newOrder[index - 1], newOrder[index]] = [newOrder[index], newOrder[index - 1]];
+    // Update displayOrder values
+    const reordered = newOrder.map((c, i) => ({ ...c, displayOrder: i + 1 }));
+    setCategories(reordered);
+    try {
+      await adminApi.reorderCategories(reordered.map(c => c.id));
+      toast({ title: 'Order updated' });
+    } catch { toast({ title: 'Reorder failed', variant: 'destructive' }); }
+  };
+
+  const handleMoveDown = async (index: number) => {
+    if (index === categories.length - 1) return;
+    const newOrder = [...categories];
+    [newOrder[index], newOrder[index + 1]] = [newOrder[index + 1], newOrder[index]];
+    const reordered = newOrder.map((c, i) => ({ ...c, displayOrder: i + 1 }));
+    setCategories(reordered);
+    try {
+      await adminApi.reorderCategories(reordered.map(c => c.id));
+      toast({ title: 'Order updated' });
+    } catch { toast({ title: 'Reorder failed', variant: 'destructive' }); }
+  };
+
   return (
     <AdminLayout breadcrumbs={[{ label: 'Categories' }]} requiredPermission="manage_categories">
       <div className="flex items-center justify-between mb-4">
@@ -67,9 +92,16 @@ const Categories: React.FC = () => {
       </div>
       {loading ? <div className="space-y-2">{[1,2,3].map(i => <div key={i} className="h-14 bg-muted animate-pulse rounded-md" />)}</div> : (
         <div className="space-y-2">
-          {categories.map(c => (
+          {categories.map((c, index) => (
             <div key={c.id} className="flex items-center gap-3 p-3 border border-border rounded-md bg-card">
-              <GripVertical className="h-4 w-4 text-muted-foreground cursor-grab" />
+              <div className="flex flex-col gap-0.5">
+                <Button variant="ghost" size="icon" className="h-6 w-6" disabled={index === 0} onClick={() => handleMoveUp(index)}>
+                  <ArrowUp className="h-3.5 w-3.5" />
+                </Button>
+                <Button variant="ghost" size="icon" className="h-6 w-6" disabled={index === categories.length - 1} onClick={() => handleMoveDown(index)}>
+                  <ArrowDown className="h-3.5 w-3.5" />
+                </Button>
+              </div>
               <span className="text-xl">{c.emoji}</span>
               <div className="flex-1">
                 <p className="text-sm font-medium text-card-foreground">{c.name}</p>

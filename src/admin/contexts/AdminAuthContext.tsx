@@ -26,7 +26,7 @@ type AdminPermission =
 
 const SUPPORT_BLOCKED: AdminPermission[] = [
   'manage_templates', 'manage_pricing', 'manage_promo_codes', 'manage_settings',
-  'suspend_customer', 'delete_customer', 'refund', 'manual_unlock',
+  'suspend_customer', 'delete_customer', 'refund', 'manual_unlock', 'takedown_invite',
 ];
 
 const AdminAuthContext = createContext<AdminAuthContextType | null>(null);
