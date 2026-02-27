@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import { api } from '@/services/api';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
@@ -19,6 +20,7 @@ const Dashboard = () => {
   const [invites, setInvites] = useState<Invite[]>([]);
   const [loading, setLoading] = useState(true);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     if (!isAuthenticated) { navigate('/login'); return; }
@@ -35,14 +37,16 @@ const Dashboard = () => {
 
   const handleDelete = async () => {
     if (!deleteId) return;
+    setDeleting(true);
     try {
       await api.deleteInvite(deleteId);
       setInvites(prev => prev.filter(i => i.id !== deleteId));
-      toast({ title: 'Invite deleted' });
+      toast({ title: 'Invite deleted', description: 'The invitation has been permanently removed.' });
     } catch {
       toast({ title: 'Failed to delete', variant: 'destructive' });
     }
     setDeleteId(null);
+    setDeleting(false);
   };
 
   return (
@@ -70,36 +74,55 @@ const Dashboard = () => {
 
         {/* Stats */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
-          {[
-            { label: 'Total Invites', value: invites.length },
-            { label: 'Total RSVPs', value: totalRsvps },
-            { label: 'Active Invites', value: activeInvites },
-          ].map(s => (
-            <div key={s.label} className="p-6 rounded-xl border border-border bg-card text-center">
-              <p className="text-3xl font-display font-bold text-foreground">{s.value}</p>
-              <p className="text-sm text-muted-foreground font-body mt-1">{s.label}</p>
-            </div>
-          ))}
+          {loading ? (
+            Array.from({ length: 3 }).map((_, i) => (
+              <Skeleton key={i} className="h-24 rounded-xl" />
+            ))
+          ) : (
+            [
+              { label: 'Total Invites', value: invites.length, icon: '📨' },
+              { label: 'Total RSVPs', value: totalRsvps, icon: '💌' },
+              { label: 'Active Invites', value: activeInvites, icon: '✨' },
+            ].map(s => (
+              <div key={s.label} className="p-6 rounded-xl border border-border bg-card text-center">
+                <div className="text-2xl mb-1">{s.icon}</div>
+                <p className="text-3xl font-display font-bold text-foreground">{s.value}</p>
+                <p className="text-sm text-muted-foreground font-body mt-1">{s.label}</p>
+              </div>
+            ))
+          )}
         </div>
 
         {/* Invites */}
         {loading ? (
-          <div className="text-center py-12">
-            <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="rounded-xl border border-border overflow-hidden">
+                <Skeleton className="h-36 w-full" />
+                <div className="p-5 space-y-3">
+                  <Skeleton className="h-5 w-3/4" />
+                  <Skeleton className="h-4 w-1/2" />
+                  <div className="flex gap-2">
+                    <Skeleton className="h-8 flex-1" />
+                    <Skeleton className="h-8 flex-1" />
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         ) : invites.length === 0 ? (
           <div className="text-center py-20 rounded-xl border border-border bg-card">
-            <div className="text-4xl mb-4">✨</div>
+            <div className="text-5xl mb-4">✨</div>
             <h3 className="font-display text-xl font-semibold mb-2">No invites yet</h3>
             <p className="text-muted-foreground font-body mb-6">Create your first beautiful invitation</p>
-            <Button asChild><Link to="/templates">Browse Templates</Link></Button>
+            <Button asChild size="lg" className="font-body"><Link to="/templates">Browse Templates</Link></Button>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {invites.map(inv => (
               <div key={inv.id} className="rounded-xl border border-border bg-card overflow-hidden hover:shadow-md transition-shadow">
                 <div className="h-36 bg-gradient-to-br from-primary/5 to-accent/30 flex items-center justify-center">
-                  <span className="text-sm text-muted-foreground font-body capitalize">{inv.templateSlug.replace('-', ' ')}</span>
+                  <span className="text-sm text-muted-foreground font-body capitalize">{inv.templateSlug.replace(/-/g, ' ')}</span>
                 </div>
                 <div className="p-5">
                   <div className="flex items-center justify-between mb-3">
@@ -128,21 +151,17 @@ const Dashboard = () => {
                   )}
 
                   <div className="flex gap-2">
-                    <Button asChild size="sm" variant="outline" className="flex-1 text-xs">
-                      <Link to={
-                        inv.status === 'draft'
-                          ? `/create/${inv.id}`
-                          : `/dashboard/invites/${inv.id}/edit`
-                      }>
+                    <Button asChild size="sm" variant="outline" className="flex-1 text-xs font-body">
+                      <Link to={inv.status === 'draft' ? `/create/${inv.id}` : `/dashboard/invites/${inv.id}/edit`}>
                         Edit
                       </Link>
                     </Button>
                     {inv.status === 'published' && (
                       <>
-                        <Button asChild size="sm" variant="outline" className="flex-1 text-xs">
+                        <Button asChild size="sm" variant="outline" className="flex-1 text-xs font-body">
                           <Link to={`/i/${inv.slug}`} target="_blank">Preview</Link>
                         </Button>
-                        <Button asChild size="sm" variant="outline" className="flex-1 text-xs">
+                        <Button asChild size="sm" variant="outline" className="flex-1 text-xs font-body">
                           <Link to={`/dashboard/invites/${inv.id}/rsvps`}>RSVPs</Link>
                         </Button>
                       </>
@@ -150,7 +169,7 @@ const Dashboard = () => {
                     <Button
                       size="sm"
                       variant="ghost"
-                      className="text-xs text-destructive hover:text-destructive"
+                      className="text-xs text-destructive hover:text-destructive font-body"
                       onClick={() => setDeleteId(inv.id)}
                     >
                       ×
@@ -166,17 +185,18 @@ const Dashboard = () => {
       {/* Delete confirmation modal */}
       {deleteId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/50 backdrop-blur-sm px-4">
-          <div className="bg-card rounded-xl border border-border p-6 max-w-sm w-full shadow-xl">
-            <h3 className="font-display text-lg font-semibold mb-2">Delete Invite</h3>
-            <p className="text-sm text-muted-foreground font-body mb-6">
-              Are you sure? This will permanently delete this invitation and all its RSVPs. This action cannot be undone.
+          <div className="bg-card rounded-xl border border-border p-6 max-w-sm w-full shadow-xl animate-scale-in">
+            <div className="text-3xl text-center mb-3">⚠️</div>
+            <h3 className="font-display text-lg font-semibold mb-2 text-center">Delete Invite</h3>
+            <p className="text-sm text-muted-foreground font-body mb-6 text-center">
+              This will permanently delete this invitation and all its RSVPs. This action cannot be undone.
             </p>
             <div className="flex gap-3">
-              <Button variant="outline" className="flex-1 font-body" onClick={() => setDeleteId(null)}>
+              <Button variant="outline" className="flex-1 font-body" onClick={() => setDeleteId(null)} disabled={deleting}>
                 Cancel
               </Button>
-              <Button variant="destructive" className="flex-1 font-body" onClick={handleDelete}>
-                Delete
+              <Button variant="destructive" className="flex-1 font-body" onClick={handleDelete} disabled={deleting}>
+                {deleting ? 'Deleting...' : 'Delete'}
               </Button>
             </div>
           </div>

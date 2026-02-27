@@ -41,12 +41,13 @@ const Gallery = () => {
           <Link to="/" className="font-display text-xl font-bold">Shyara</Link>
           <div className="flex items-center gap-4">
             <Link to="/pricing" className="text-sm text-muted-foreground hover:text-foreground font-body hidden md:inline">Pricing</Link>
+            <Link to="/dashboard" className="text-sm text-muted-foreground hover:text-foreground font-body hidden md:inline">Dashboard</Link>
             <Button asChild size="sm" variant="outline"><Link to="/login">Login</Link></Button>
           </div>
         </div>
       </nav>
 
-      <div className="container py-10">
+      <div className="container py-10 px-4">
         <h1 className="font-display text-3xl md:text-4xl font-bold text-center mb-2">Template Gallery</h1>
         <p className="text-center text-muted-foreground font-body mb-10">Find the perfect design for your celebration</p>
 
@@ -89,20 +90,25 @@ const Gallery = () => {
                 <div className="p-4 space-y-2">
                   <Skeleton className="h-5 w-2/3" />
                   <Skeleton className="h-4 w-1/3" />
+                  <div className="flex gap-2 pt-2">
+                    <Skeleton className="h-8 flex-1" />
+                    <Skeleton className="h-8 flex-1" />
+                  </div>
                 </div>
               </div>
             ))}
           </div>
         ) : templates.length === 0 ? (
-          <div className="text-center py-20">
+          <div className="text-center py-20 rounded-xl border border-border bg-card">
+            <div className="text-4xl mb-4">🔍</div>
             <h3 className="font-display text-xl font-semibold mb-2">No templates found</h3>
-            <p className="text-muted-foreground font-body mb-6">Try a different category or filter</p>
-            <Button onClick={() => setCategory(null)}>View All Templates</Button>
+            <p className="text-muted-foreground font-body mb-6">Try a different category or clear your filters</p>
+            <Button onClick={() => setCategory(null)} className="font-body">View All Templates</Button>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {templates.map(t => (
-              <div key={t.slug} className="group rounded-xl border border-border bg-card overflow-hidden hover:shadow-lg transition-shadow duration-300">
+              <div key={t.slug} className="group rounded-xl border border-border bg-card overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
                 <div className="aspect-[3/4] bg-muted relative overflow-hidden">
                   <div className="absolute inset-0 flex items-center justify-center text-muted-foreground font-body text-sm">
                     {t.name}
@@ -128,14 +134,27 @@ const Gallery = () => {
                 </div>
                 <div className="p-4">
                   <h3 className="font-display font-semibold">{t.name}</h3>
-                  <div className="flex items-center gap-2 mt-1">
-                    <span className="text-xs text-gold font-body">★★★★★</span>
-                    <span className="text-xs text-muted-foreground font-body">{t.tags.slice(0, 2).join(' · ')}</span>
+                  <div className="flex items-center justify-between mt-1">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-gold font-body">★★★★★</span>
+                      <span className="text-xs text-muted-foreground font-body">{t.tags.slice(0, 2).join(' · ')}</span>
+                    </div>
+                    <span className="text-xs font-body font-medium text-foreground">
+                      {t.isPremium ? `₹${t.price}` : 'Free'}
+                    </span>
                   </div>
                 </div>
               </div>
             ))}
           </div>
+        )}
+
+        {/* Results count */}
+        {!loading && templates.length > 0 && (
+          <p className="text-center text-sm text-muted-foreground font-body mt-8">
+            Showing {templates.length} template{templates.length !== 1 ? 's' : ''}
+            {activeCategory ? ` in ${activeCategory.replace('-', ' ')}` : ''}
+          </p>
         )}
       </div>
     </div>
