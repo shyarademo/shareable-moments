@@ -1,111 +1,55 @@
 
 
-# Implementation Plan: Complete Shyara Frontend (7 Items)
+# Plan: Three Fixes for Shyara Frontend
 
-## Scope Assessment
+## FIX 1 — InviteCover on Live Invite Page
 
-- **14 template renderers** need unique implementations (currently re-export GenericRenderer)
-- **InviteCover** needs per-template animation variants
-- **InviteForm** needs multi-step wizard refactor
-- **Account page** needs functional password/avatar/notifications
-- **FieldRenderer** needs inline validation
-- **TemplateThumbnail** already has per-template themes — needs minor refinement to use config dummyData names instead of hardcoded names
+**Finding:** After reading all 15 template renderers, every single one already imports and renders `InviteCover` internally (e.g., royal-gold at line 86, executive-edge at line 26, confetti-burst at line 117). `LiveInvite.tsx` renders the template renderer, which already shows the cover first and gates content behind `isOpened` state. The `isPreview` prop is not passed (defaults to `false`), so localStorage is respected. `data.slug` is spread into the data object from the URL param.
+
+**Conclusion: FIX 1 is already working.** No changes needed. Adding InviteCover at the LiveInvite level would cause a double cover. I will skip this fix.
 
 ---
 
-## Implementation Steps
+## FIX 2 — Template-Specific Exit Animations in InviteCover
 
-### ITEM 1+2: Template Renderers with Opening Animations (14 files)
+**Current state:** Line 174 has a single generic exit: `exit={{ opacity: 0, scale: 1.05 }}` for all themes.
 
-Each renderer follows the same pattern as `royal-gold/index.tsx` and `midnight-bloom/index.tsx`: unique color palette object, custom animation variants, InviteCover with template-specific theme, and all sections (hero, story, schedule, venue, gallery, RSVP).
+**Plan:** Restructure InviteCover to support 6 distinct exit animation types based on theme:
 
-**InviteCover changes**: Add 11 new theme variants to `themeStyles` (pastel-floral, ivory-classic, rustic-warm, celestial-navy, golden-warm, rose-pink, neon-dark, star-blue, sweet-pink, corporate-dark, corporate-light, anniversary-warm). Update `localStorage` key to use `shyara_intro_seen_{slug}` per spec. Add `skipDelay` to 4 seconds (currently 2.5s).
+1. **Double doors** (gold, ivory-classic, rustic-warm, celestial-navy, anniversary-warm, golden-warm): Split the cover into two absolutely-positioned halves (left/right) using `clipPath`. On exit, left half slides to `x: "-100%"` and right half to `x: "100%"` simultaneously.
 
-**New renderers** (each file `~150-250 lines`, unique identity):
+2. **Curtain drop** (pastel-floral, rose-pink, dark-floral): Exit slides down `y: "100vh"`.
 
-| Template | Color Palette | Animation Style |
-|---|---|---|
-| floral-garden | Sage green + blush pink, light bg | Petals parting reveal, botanical ornaments |
-| eternal-vows | Ivory + deep burgundy, cream bg | Curtain draw reveal, classic serif feel |
-| rustic-charm | Warm brown + olive, kraft-paper bg | Barn doors sliding open, handwritten feel |
-| celestial-dreams | Navy + gold stars, dark bg | Starfield zoom-out reveal, twinkling particles |
-| golden-ring | Warm gold + cream, light bg | Ring spin reveal, warm elegance |
-| rose-garden | Dusty rose + sage, soft pink bg | Rose petals falling away reveal |
-| neon-glow | Cyan neon + purple, dark bg | Neon flicker-on reveal, glow effects |
-| little-star | Soft blue + yellow stars, pastel bg | Star twinkle reveal, gentle animations |
-| sweet-arrival | Pastel pink + mint, soft bg | Envelope unfold reveal, cute motifs |
-| executive-edge | Dark navy + electric blue, dark bg | Clean slide-up reveal, geometric |
-| modern-summit | White + bright blue, clean bg | Fade-scale reveal, minimal |
-| timeless-love | Warm sepia + burgundy, warm bg | Photo album page-turn reveal |
+3. **Zoom burst** (confetti, neon-dark): Exit scales to 1.8 and fades to 0.
 
-Each renderer imports `InviteCover` and `InviteRsvpForm`, defines its own color constants, animation variants, decorative components (dividers, particles, ornaments), and renders all supported sections from config.
+4. **Soft fade up** (star-blue, sweet-pink): Exit `y: -60, opacity: 0`.
 
-### ITEM 3+4: Multi-Step Wizard
+5. **Horizontal slide** (corporate-dark, corporate-light): Exit `x: "-100vw"`.
 
-**Refactor `src/components/InviteForm/index.tsx`:**
+**Implementation approach:**
+- Create a `getExitType(theme)` function mapping theme → animation group
+- For the "doors" type: render TWO `motion.div` children with identical content but `clipPath: inset(0 50% 0 0)` and `clipPath: inset(0 0 0 50%)`, each with their own exit animation
+- For all other types: single `motion.div` with conditional exit variant
+- Use `AnimatePresence mode="wait"` and a `state` variable (`'visible' | 'exiting' | 'done'`) to control the flow
+- Keep all existing enter animations unchanged — only the exit changes
+- "Skip Intro" triggers the same exit animation (not an instant skip)
 
-- Add `currentStep` state (0-3)
-- Define 4 steps: `['Event Details', 'Venue & Story', 'Media & Schedule', 'Review & Publish']`
-- Map config field sections to steps:
-  - Step 0: fields where `section === 'basic'`
-  - Step 1: fields where `section === 'venue' || section === 'story'`
-  - Step 2: fields where `section === 'gallery' || section === 'schedule' || section === 'settings'`
-  - Step 3: Live preview + SlugPicker + publish
-- Step indicator bar at top with numbered circles, step names, connecting lines, active/completed states
-- "Previous" / "Next" buttons replace current layout; "Save Draft" on every step; "Publish" only on step 3
-- Next button validates only current step's required fields before advancing
-- Step 3 shows full template renderer with mobile/desktop toggle using PhoneMockup for mobile view
-- Form data preserved in `formData` state across steps (already works this way)
-
-### ITEM 5: Template Thumbnails
-
-**Update `TemplateThumbnail.tsx`:**
-- Use `config.dummyData` to extract real names instead of hardcoded "Sarah & Aryan" etc.
-- Add the same name extraction logic as GenericRenderer's `getTitle()`
-
-### ITEM 6: Account Page
-
-**Update `src/pages/Account.tsx`:**
-- **Password**: Add `currentPassword`, `newPassword`, `confirmPassword` state. Validate: current not empty, new >= 8 chars, confirm matches. Show inline red error text. Toast on success.
-- **Avatar**: Add hidden `<input type="file" accept="image/*">` ref. On select, use `URL.createObjectURL` + save base64 via FileReader to `localStorage('shyara_avatar')`. Read on mount.
-- **Notifications**: Read/write toggle states from `localStorage('shyara_notif_rsvp')` and `localStorage('shyara_notif_weekly')`.
-
-### ITEM 7: Inline Form Validation
-
-**Update `FieldRenderer.tsx`:**
-- Add `touched` state per field (set on blur)
-- Add `error` prop passed from parent
-- Show red error message below field when touched and error exists
-- Clear error on change
-
-**Update `InviteForm/index.tsx`:**
-- Add `errors` state and `touched` state
-- `validateStep(step)` function: checks required fields for current step, date-in-future for date fields, RSVP deadline before event date
-- On "Next" click: mark all current step fields as touched, run validateStep, block if errors
-- Pass error strings to FieldRenderer
+**File:** `src/components/InviteCover.tsx`
 
 ---
 
-## Files to Create/Edit
+## FIX 3 — Gallery Section in Executive Edge + Config Update
 
-**Create (14 template renderers):**
-- `src/templates/wedding/floral-garden/index.tsx`
-- `src/templates/wedding/eternal-vows/index.tsx`
-- `src/templates/wedding/rustic-charm/index.tsx`
-- `src/templates/wedding/celestial-dreams/index.tsx`
-- `src/templates/engagement/golden-ring/index.tsx`
-- `src/templates/engagement/rose-garden/index.tsx`
-- `src/templates/birthday/neon-glow/index.tsx`
-- `src/templates/baby-shower/little-star/index.tsx`
-- `src/templates/baby-shower/sweet-arrival/index.tsx`
-- `src/templates/corporate/executive-edge/index.tsx`
-- `src/templates/corporate/modern-summit/index.tsx`
-- `src/templates/anniversary/timeless-love/index.tsx`
+**Add to config.ts:**
+- Add `galleryPhotos` array with 6 `/placeholder.svg` entries to `dummyData`
 
-**Edit:**
-- `src/components/InviteCover.tsx` — add theme variants, update localStorage key, 4s skip delay
-- `src/components/InviteForm/index.tsx` — multi-step wizard with step indicator, validation, step 4 preview
-- `src/components/InviteForm/FieldRenderer.tsx` — inline validation display
-- `src/components/TemplateThumbnail.tsx` — use dummyData names
-- `src/pages/Account.tsx` — functional password/avatar/notifications
+**Add to index.tsx:**
+- Insert a Gallery section between the Venue section (line 91) and the RSVP section (line 93)
+- Conditional render: only if `data.galleryPhotos?.length > 0`
+- Grid layout: 2 columns on mobile, 3 on desktop
+- Each item: a styled card with `c.bgCard` background, `c.border` border, hover scale effect, rounded corners
+- Section header: "Gallery" with the same accent divider pattern used in other sections
+- Background: `c.bg` (alternating with bgAlt from venue above)
+
+**Files:** `src/templates/corporate/executive-edge/config.ts`, `src/templates/corporate/executive-edge/index.tsx`
 
