@@ -3,10 +3,23 @@ import { NavLink, useLocation } from 'react-router-dom';
 import { useAdminAuth } from '../contexts/AdminAuthContext';
 import {
   LayoutDashboard, Users, FileText, Palette, CreditCard, FolderTree,
-  Tag, Megaphone, Settings, LogOut, ChevronRight,
+  Tag, Megaphone, Settings, LogOut,
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
 import StatusBadge from './StatusBadge';
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarRail,
+  useSidebar,
+} from '@/components/ui/sidebar';
 
 interface NavItem { label: string; to: string; icon: React.ElementType; permission?: string }
 interface NavSection { title: string; items: NavItem[] }
@@ -34,6 +47,8 @@ const sections: NavSection[] = [
 const AdminSidebar: React.FC = () => {
   const { user, logout, hasPermission } = useAdminAuth();
   const location = useLocation();
+  const { state } = useSidebar();
+  const collapsed = state === 'collapsed';
 
   const isActive = (path: string) => {
     if (path === '/admin') return location.pathname === '/admin';
@@ -41,65 +56,77 @@ const AdminSidebar: React.FC = () => {
   };
 
   return (
-    <aside className="w-60 h-screen sticky top-0 flex flex-col border-r border-border" style={{ background: 'hsl(220 20% 10%)' }}>
+    <Sidebar collapsible="icon" className="border-r border-sidebar-border" style={{ '--sidebar-background': '220 20% 10%', '--sidebar-foreground': '0 0% 95%', '--sidebar-accent': '220 15% 18%', '--sidebar-accent-foreground': '0 0% 95%', '--sidebar-border': '220 15% 18%' } as React.CSSProperties}>
       {/* Logo */}
-      <div className="px-4 py-4 border-b" style={{ borderColor: 'hsl(220 15% 18%)' }}>
-        <h1 className="text-base font-bold font-body" style={{ color: 'hsl(0 0% 95%)' }}>Shyara Admin</h1>
-        <p className="text-xs mt-0.5" style={{ color: 'hsl(220 10% 55%)' }}>Internal Portal</p>
-      </div>
+      <SidebarHeader className="px-4 py-4 border-b border-sidebar-border">
+        {collapsed ? (
+          <span className="text-base font-bold text-sidebar-foreground text-center">S</span>
+        ) : (
+          <>
+            <h1 className="text-base font-bold font-body text-sidebar-foreground">Shyara Admin</h1>
+            <p className="text-xs" style={{ color: 'hsl(220 10% 55%)' }}>Internal Portal</p>
+          </>
+        )}
+      </SidebarHeader>
 
       {/* Navigation */}
-      <nav className="flex-1 px-2 py-3 space-y-4 overflow-y-auto">
+      <SidebarContent>
         {sections.map((section, si) => {
           const visibleItems = section.items.filter(item =>
             !item.permission || hasPermission(item.permission as any)
           );
           if (visibleItems.length === 0) return null;
           return (
-            <div key={si}>
+            <SidebarGroup key={si}>
               {section.title && (
-                <p className="px-3 mb-1 text-[10px] font-semibold uppercase tracking-widest" style={{ color: 'hsl(220 10% 45%)' }}>
+                <SidebarGroupLabel className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: 'hsl(220 10% 45%)' }}>
                   {section.title}
-                </p>
+                </SidebarGroupLabel>
               )}
-              {visibleItems.map(item => (
-                <NavLink
-                  key={item.to}
-                  to={item.to}
-                  end={item.to === '/admin'}
-                  className={cn(
-                    'flex items-center gap-2.5 px-3 py-2 rounded-md text-sm font-medium transition-colors mb-0.5',
-                    isActive(item.to)
-                      ? 'text-white'
-                      : 'hover:text-white'
-                  )}
-                  style={isActive(item.to) ? { background: 'hsl(220 15% 18%)', color: 'white' } : { color: 'hsl(220 10% 60%)' }}
-                >
-                  <item.icon className="h-4 w-4 shrink-0" />
-                  <span>{item.label}</span>
-                </NavLink>
-              ))}
-            </div>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  {visibleItems.map(item => (
+                    <SidebarMenuItem key={item.to}>
+                      <SidebarMenuButton
+                        asChild
+                        isActive={isActive(item.to)}
+                        tooltip={item.label}
+                      >
+                        <NavLink to={item.to} end={item.to === '/admin'}>
+                          <item.icon className="h-4 w-4 shrink-0" />
+                          <span>{item.label}</span>
+                        </NavLink>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  ))}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
           );
         })}
-      </nav>
+      </SidebarContent>
 
       {/* User footer */}
-      <div className="px-3 py-3 border-t" style={{ borderColor: 'hsl(220 15% 18%)' }}>
-        <div className="flex items-center gap-2 mb-2">
-          <div className="h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: 'hsl(220 15% 20%)', color: 'hsl(0 0% 80%)' }}>
-            {user?.name?.charAt(0) || 'A'}
+      <SidebarFooter className="px-3 py-3 border-t border-sidebar-border">
+        {!collapsed && (
+          <div className="flex items-center gap-2 mb-2">
+            <div className="h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: 'hsl(220 15% 20%)', color: 'hsl(0 0% 80%)' }}>
+              {user?.name?.charAt(0) || 'A'}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-medium truncate text-sidebar-foreground">{user?.name}</p>
+              <StatusBadge status={user?.role || 'admin'} className="mt-0.5" />
+            </div>
           </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-xs font-medium truncate" style={{ color: 'hsl(0 0% 90%)' }}>{user?.name}</p>
-            <StatusBadge status={user?.role || 'admin'} className="mt-0.5" />
-          </div>
-        </div>
-        <button onClick={logout} className="flex items-center gap-2 w-full px-2 py-1.5 rounded text-xs font-medium transition-colors hover:bg-white/5" style={{ color: 'hsl(220 10% 55%)' }}>
-          <LogOut className="h-3.5 w-3.5" /> Sign out
-        </button>
-      </div>
-    </aside>
+        )}
+        <SidebarMenuButton onClick={logout} tooltip="Sign out" className="text-xs" style={{ color: 'hsl(220 10% 55%)' }}>
+          <LogOut className="h-3.5 w-3.5" />
+          <span>Sign out</span>
+        </SidebarMenuButton>
+      </SidebarFooter>
+
+      <SidebarRail />
+    </Sidebar>
   );
 };
 
