@@ -1,122 +1,47 @@
 
 
-# Admin Portal Audit — Status Report & Fix Plan
+# Implementation Plan — 4 Fixes
 
-## AUDIT RESULTS
+## FIX 1: Forgot Password Page
 
-### Architecture & Isolation
-| # | Requirement | Status |
-|---|-------------|--------|
-| 1 | All admin code under `src/admin/` | ✅ Done |
-| 2 | Routes under `/admin/*` | ✅ Done |
-| 3 | Separate AdminAuthContext | ✅ Done |
-| 4 | All API via `src/admin/services/api.ts` | ✅ Done |
-| 5 | Dummy data: 22 customers, 17 invites, 25 transactions, 6 categories, 5 promos | ✅ Done (invites 17 < 30, txns 25 < 50 — close enough but will pad) |
+**Files:**
+- Create `src/pages/ForgotPassword.tsx` — two-state component (email input → success confirmation), 1.5s simulated delay, "Resend" returns to state 1 with email pre-filled
+- Edit `src/pages/Login.tsx` line 77 — add "Forgot password?" link right-aligned below password field, navigating to `/forgot-password`
+- Edit `src/App.tsx` — add lazy import for ForgotPassword and route `/forgot-password`
 
-### Auth & Role Access
-| # | Requirement | Status |
-|---|-------------|--------|
-| 1 | Two mock accounts work | ✅ Done |
-| 2 | Support blocked from Templates, Promo Codes, Settings — shows permission state | ✅ Done via `requiredPermission` on AdminLayout |
-| 3 | Support cannot do destructive actions — buttons hidden or disabled with tooltip | ⚠️ **Partial** — buttons are hidden via `hasPermission()` checks, but no disabled+tooltip pattern is used. Takedown in Invites list has no permission check at all. |
-| 4 | Unauthenticated `/admin/*` redirects to `/admin/login` | ✅ Done via AdminLayout's `Navigate` |
-| 5 | After login, redirect to Dashboard | ✅ Done |
+## FIX 2: Promo Code in Checkout
 
-### Customer Management
-| # | Requirement | Status |
-|---|-------------|--------|
-| 1 | Customer list: search, filters, bulk export CSV | ✅ Done |
-| 2 | Row click → Customer Detail | ✅ Done |
-| 3 | All 4 tabs: Invites, Payments, Activity Log, Notes | ✅ Done |
-| 4 | Activity Log shows admin actions with "Admin" badge | ✅ Done |
-| 5 | Internal Notes: Add Note with author + timestamp | ✅ Done |
-| 6 | View As Customer: new tab + persistent banner + sessionStorage | ✅ Done |
-| 7 | Impersonation uses sessionStorage | ✅ Done |
-| 8 | Manual Unlock adds to Activity Log | ✅ Done (in api.ts `unlockTemplate`) |
+**File:** `src/pages/Checkout.tsx`
 
-### Invite Management
-| # | Requirement | Status |
-|---|-------------|--------|
-| 1 | Filters by status, category, search | ✅ Done |
-| 2 | Take Down / Re-publish toggle | ✅ Done |
-| 3 | Edit Slug with availability check | ✅ Done |
-| 4 | Internal Notes tab on Invite Detail | ✅ Done |
-| 5 | RSVP guest list visible | ✅ Done |
+- Add state: `promoCode`, `promoExpanded`, `promoLoading`, `promoError`, `appliedPromo`
+- Hardcoded valid codes map: `WELCOME10` (10%), `SHYARA20` (20%), `FLAT50` (₹50 flat), `NEWUSER` (15%), `SAVE100` (₹100 flat)
+- Insert collapsible "Have a promo code?" section between "Payment Details" heading (line 139) and the card number input
+- Collapsible uses ChevronDown icon, expands to input + Apply button
+- Apply: 800ms spinner, validates against map, shows green success or red error
+- On valid: replace input with applied code pill + ✕ Remove button
+- Update Order Summary section: show original price struck through, discount line, new total
+- On remove: revert everything
 
-### Template Management
-| # | Requirement | Status |
-|---|-------------|--------|
-| 1 | Card shows purchase + preview count | ✅ Done |
-| 2 | Hide/Show toggle | ✅ Done |
-| 3 | Featured toggle | ✅ Done |
-| 4 | Delete blocked if ANY purchase history, tooltip shows counts | ✅ Done |
-| 5 | Template Edit has all fields | ✅ Done |
-| 6 | Add Template: auto-slug + developer note | ✅ Done |
+## FIX 3: Taken-Down Invite Page
 
-### Orders & Payments
-| # | Requirement | Status |
-|---|-------------|--------|
-| 1 | Summary row: Total Revenue, Refunds, Net | ✅ Done |
-| 2 | Refund modal: full/partial option | ✅ Done |
-| 3 | Refund modal: keep active / unpublish radio | ✅ Done |
-| 4 | After refund: status updates + activity log entry | ✅ Done |
-| 5 | Failed Payments shows failure reason | ✅ Done |
+**Files:**
+- Edit `src/services/api.ts` — add a `taken-down-demo` mock invite with status `'taken-down'`, update `getPublicInvite` to check for taken-down status and throw a specific error (or return status in the data)
+- Edit `src/types/index.ts` — add `'taken-down'` to `InviteStatus` type, add optional `status` field to `PublicInviteData`
+- Edit `src/pages/LiveInvite.tsx` — add a `takenDown` state, check `inviteData.status === 'taken-down'`, render branded "This Invitation Is No Longer Available" page with Shyara logo, warm messaging, "Powered by Shyara" footer
 
-### Categories, Promo Codes, Announcements
-| # | Requirement | Status |
-|---|-------------|--------|
-| 1 | Categories drag-to-reorder (or up/down arrows) | ❌ **Missing** — GripVertical icon is rendered but not functional. No drag handler or up/down arrow buttons. API `reorderCategories` exists but is never called. |
-| 2 | Category delete blocked if templates assigned | ✅ Done |
-| 3 | Promo Code usage detail shows customer + template | ✅ Done |
-| 4 | Announcements "View Message" action | ✅ Done |
+## FIX 4: Mobile/Desktop Toggle on Template Preview
 
-### Settings
-| # | Requirement | Status |
-|---|-------------|--------|
-| 1 | Maintenance Mode toggle with description | ✅ Done |
-| 2 | Feature Flags with labels + descriptions | ✅ Done |
-| 3 | Platform Currency setting | ✅ Done |
+**File:** `src/pages/TemplatePreview.tsx`
 
-### Global Search
-| # | Requirement | Status |
-|---|-------------|--------|
-| 1 | Global search in header | ✅ Done |
-| 2 | Searches customer email, invite slug, txn ID with quick-jump | ✅ Done |
-
-### Shared UX Requirements
-| # | Requirement | Status |
-|---|-------------|--------|
-| 1 | Skeleton loaders on data-fetching pages | ✅ Done |
-| 2 | Empty states on tables | ✅ Done |
-| 3 | Confirmation modals for destructive actions | ⚠️ **Partial** — Takedown in Invites list (not detail) fires directly without a ConfirmModal |
-| 4 | Toast notifications for every action | ✅ Done |
-| 5 | Breadcrumbs on detail pages | ✅ Done |
-| 6 | DataTable column visibility toggle, persisted in localStorage | ✅ Done |
-| 7 | All tables have Export CSV | ✅ Done |
+- Add `previewMode` state: `'mobile' | 'desktop'` (default: `'mobile'`)
+- Add sticky top bar: left = template name + category badge, center = pill toggle (Mobile/Desktop), right = "Use This Template" CTA linking to `/checkout/${slug}`
+- Mobile mode: wrap `TemplateRenderer` in `PhoneMockup` component, centered, scrollable inside
+- Desktop mode: render in max-w-5xl container with a fake browser chrome bar showing `invite.shyara.co.in/i/example`
+- Pass `key={previewMode}` to `TemplateRenderer` to force remount and reset animation state
+- Import `PhoneMockup` from `@/components/PhoneMockup`
 
 ---
 
-## ITEMS TO FIX
-
-### 1. Categories: Add up/down reorder arrows (Missing)
-- Add `ArrowUp` / `ArrowDown` buttons to each category row
-- Wire them to call `adminApi.reorderCategories()` and update state
-- Show toast on reorder
-
-### 2. Invites list: Add confirmation modal for takedown (Missing)
-- Currently `handleTakedown` fires directly on button click in `Invites.tsx`
-- Add a `ConfirmModal` like the one used in `InviteDetail.tsx`
-
-### 3. Invites list: Add permission check for takedown/republish (Missing)
-- Support role should not see takedown/republish buttons
-- Add `hasPermission('takedown_invite')` guard
-
-### 4. Pad mock data to meet minimums (Partial)
-- Add ~15 more invites to reach 30+
-- Add ~25 more transactions to reach 50+
-
-### Files to modify
-- `src/admin/pages/Categories.tsx` — up/down reorder arrows
-- `src/admin/pages/Invites.tsx` — confirm modal + permission check
-- `src/admin/services/api.ts` — add more mock invites + transactions
+**Total files to create:** 1 (`ForgotPassword.tsx`)
+**Total files to edit:** 5 (`Login.tsx`, `App.tsx`, `Checkout.tsx`, `LiveInvite.tsx`, `TemplatePreview.tsx`, `api.ts`, `types/index.ts`)
 
