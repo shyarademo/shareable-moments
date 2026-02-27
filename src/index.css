@@ -92,6 +92,17 @@
   }
 }
 
+  .admin-sidebar {
+    --sidebar-background: 220 20% 10%;
+    --sidebar-foreground: 0 0% 95%;
+    --sidebar-accent: 220 15% 18%;
+    --sidebar-accent-foreground: 0 0% 95%;
+    --sidebar-border: 220 15% 18%;
+    --sidebar-primary: 345 60% 60%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-ring: 345 60% 60%;
+  }
+
 @layer base {
   * {
     @apply border-border;
