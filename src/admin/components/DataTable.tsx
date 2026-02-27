@@ -4,7 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Search, Download, Settings2, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Search, Download, Settings2, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, ChevronUp, ChevronDown, Filter } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -67,6 +68,8 @@ function DataTable<T>({
   };
 
   const activeColumns = useMemo(() => columns.filter(c => visibleCols.has(c.key)), [columns, visibleCols]);
+
+  const activeFilterCount = useMemo(() => Object.values(filterValues).filter(v => v && v !== '__all__').length, [filterValues]);
 
   const filteredData = useMemo(() => {
     let result = data;
@@ -159,12 +162,12 @@ function DataTable<T>({
             </SelectContent>
           </Select>
         ))}
+        {activeFilterCount > 0 && (
+          <Badge variant="secondary" className="gap-1 text-xs">
+            <Filter className="h-3 w-3" /> {activeFilterCount} filter{activeFilterCount > 1 ? 's' : ''}
+          </Badge>
+        )}
         <div className="flex-1" />
-        {selectedIds.size > 0 && bulkActions.map(a => (
-          <Button key={a.label} size="sm" variant={a.destructive ? 'destructive' : 'outline'} onClick={() => a.onClick(data.filter(r => selectedIds.has(getRowId(r))))}>
-            {a.label} ({selectedIds.size})
-          </Button>
-        ))}
         <Popover>
           <PopoverTrigger asChild><Button variant="outline" size="sm"><Settings2 className="h-4 w-4" /></Button></PopoverTrigger>
           <PopoverContent align="end" className="w-48 p-2">
@@ -192,7 +195,9 @@ function DataTable<T>({
                 <th key={col.key} className={cn('px-3 py-2 text-left font-medium text-muted-foreground whitespace-nowrap', col.sortable && 'cursor-pointer select-none hover:text-foreground', col.className)} onClick={() => col.sortable && toggleSort(col.key)}>
                   <span className="inline-flex items-center gap-1">
                     {col.label}
-                    {sortKey === col.key && <span className="text-xs">{sortDir === 'asc' ? '↑' : '↓'}</span>}
+                    {col.sortable && sortKey === col.key && (
+                      sortDir === 'asc' ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />
+                    )}
                   </span>
                 </th>
               ))}
@@ -207,7 +212,7 @@ function DataTable<T>({
             ) : pageData.map(row => {
               const id = getRowId(row);
               return (
-                <tr key={id} className={cn('border-b border-border last:border-0 hover:bg-muted/30 transition-colors', onRowClick && 'cursor-pointer')} onClick={() => onRowClick?.(row)}>
+                <tr key={id} className={cn('border-b border-border last:border-0 hover:bg-muted/30 transition-colors group', onRowClick && 'cursor-pointer')} onClick={() => onRowClick?.(row)}>
                   {bulkActions.length > 0 && (
                     <td className="w-10 px-3 py-2" onClick={e => e.stopPropagation()}>
                       <Checkbox checked={selectedIds.has(id)} onCheckedChange={() => toggleRow(id)} />
@@ -224,6 +229,19 @@ function DataTable<T>({
           </tbody>
         </table>
       </div>
+
+      {/* Sticky bulk action bar */}
+      {selectedIds.size > 0 && bulkActions.length > 0 && (
+        <div className="sticky bottom-0 left-0 right-0 bg-card border border-border rounded-lg p-3 flex items-center gap-3 shadow-lg z-10">
+          <span className="text-sm font-medium text-foreground">{selectedIds.size} selected</span>
+          <div className="flex-1" />
+          {bulkActions.map(a => (
+            <Button key={a.label} size="sm" variant={a.destructive ? 'destructive' : 'outline'} onClick={() => a.onClick(data.filter(r => selectedIds.has(getRowId(r))))}>
+              {a.label}
+            </Button>
+          ))}
+        </div>
+      )}
 
       {/* Pagination */}
       <div className="flex items-center justify-between text-xs text-muted-foreground">

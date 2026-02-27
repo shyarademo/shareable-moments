@@ -4,7 +4,7 @@ import StatsCard from '../components/StatsCard';
 import StatusBadge from '../components/StatusBadge';
 import { adminApi } from '../services/api';
 import { DashboardStats, AdminCustomer, AdminTransaction, AdminTemplate } from '../types';
-import { Users, FileText, IndianRupee, UserPlus, Palette, MessageSquare, AlertTriangle } from 'lucide-react';
+import { Users, FileText, IndianRupee, UserPlus, Palette, MessageSquare, AlertTriangle, Plus, CreditCard, Megaphone } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -40,10 +40,12 @@ const Dashboard: React.FC = () => {
     adminApi.getRevenueChart(chartPeriod).then(setChartData);
   }, [chartPeriod]);
 
+  const totalRevenue = chartData.reduce((sum, d) => sum + d.revenue, 0);
+
   if (loading) return (
     <AdminLayout breadcrumbs={[{ label: 'Overview' }]}>
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
-        {Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-24 rounded-lg" />)}
+        {Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-28 rounded-lg" />)}
       </div>
       <Skeleton className="h-64 rounded-lg" />
     </AdminLayout>
@@ -53,26 +55,45 @@ const Dashboard: React.FC = () => {
     <AdminLayout breadcrumbs={[{ label: 'Overview' }]}>
       {/* Stats Row */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
-        <StatsCard label="Total Users" value={stats!.totalUsers} change={stats!.totalUsersChange} icon={<Users className="h-4 w-4" />} />
-        <StatsCard label="Active Invites" value={stats!.activeInvites} change={stats!.activeInvitesChange} icon={<FileText className="h-4 w-4" />} />
-        <StatsCard label="Today's Revenue" value={stats!.todayRevenue} change={stats!.todayRevenueChange} icon={<IndianRupee className="h-4 w-4" />} prefix="₹" />
-        <StatsCard label="New Signups" value={stats!.newSignupsToday} change={stats!.newSignupsTodayChange} icon={<UserPlus className="h-4 w-4" />} />
-        <StatsCard label="Templates" value={stats!.totalTemplates} change={stats!.totalTemplatesChange} icon={<Palette className="h-4 w-4" />} />
-        <StatsCard label="Total RSVPs" value={stats!.totalRsvps} change={stats!.totalRsvpsChange} icon={<MessageSquare className="h-4 w-4" />} />
+        <StatsCard label="Total Users" value={stats!.totalUsers} change={stats!.totalUsersChange} icon={<Users className="h-4 w-4" />} accentColor="hsl(217 91% 60%)" />
+        <StatsCard label="Active Invites" value={stats!.activeInvites} change={stats!.activeInvitesChange} icon={<FileText className="h-4 w-4" />} accentColor="hsl(262 83% 58%)" />
+        <StatsCard label="Today's Revenue" value={stats!.todayRevenue} change={stats!.todayRevenueChange} icon={<IndianRupee className="h-4 w-4" />} prefix="₹" accentColor="hsl(142 71% 45%)" />
+        <StatsCard label="New Signups" value={stats!.newSignupsToday} change={stats!.newSignupsTodayChange} icon={<UserPlus className="h-4 w-4" />} accentColor="hsl(38 92% 50%)" />
+        <StatsCard label="Templates" value={stats!.totalTemplates} change={stats!.totalTemplatesChange} icon={<Palette className="h-4 w-4" />} accentColor="hsl(330 81% 60%)" />
+        <StatsCard label="Total RSVPs" value={stats!.totalRsvps} change={stats!.totalRsvpsChange} icon={<MessageSquare className="h-4 w-4" />} accentColor="hsl(188 78% 45%)" />
+      </div>
+
+      {/* Quick Actions */}
+      <div className="flex flex-wrap gap-2 mb-6">
+        <Button size="sm" variant="outline" onClick={() => navigate('/admin/customers/add')} className="gap-1.5">
+          <UserPlus className="h-3.5 w-3.5" /> Add Customer
+        </Button>
+        <Button size="sm" variant="outline" onClick={() => navigate('/admin/templates/add')} className="gap-1.5">
+          <Plus className="h-3.5 w-3.5" /> Add Template
+        </Button>
+        <Button size="sm" variant="outline" onClick={() => navigate('/admin/transactions')} className="gap-1.5">
+          <CreditCard className="h-3.5 w-3.5" /> Failed Payments
+        </Button>
+        <Button size="sm" variant="outline" onClick={() => navigate('/admin/announcements')} className="gap-1.5">
+          <Megaphone className="h-3.5 w-3.5" /> Send Announcement
+        </Button>
       </div>
 
       {/* Revenue Chart + Alerts */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
         <div className="lg:col-span-2 border border-border rounded-lg bg-card p-4">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-semibold text-card-foreground">Revenue</h3>
+          <div className="flex items-center justify-between mb-1">
+            <div>
+              <h3 className="text-sm font-semibold text-card-foreground">Revenue</h3>
+              <p className="text-2xl font-bold text-card-foreground">₹{totalRevenue.toLocaleString()}</p>
+            </div>
             <div className="flex gap-1">
               {(['7d', '30d', '90d'] as const).map(p => (
                 <Button key={p} variant={chartPeriod === p ? 'default' : 'ghost'} size="sm" className="text-xs h-7" onClick={() => setChartPeriod(p)}>{p}</Button>
               ))}
             </div>
           </div>
-          <ResponsiveContainer width="100%" height={220}>
+          <ResponsiveContainer width="100%" height={280}>
             <LineChart data={chartData}>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
               <XAxis dataKey="date" tick={{ fontSize: 10 }} tickFormatter={v => v.slice(5)} stroke="hsl(var(--muted-foreground))" />
@@ -114,7 +135,6 @@ const Dashboard: React.FC = () => {
 
       {/* Recent Tables */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-        {/* Recent Signups */}
         <div className="border border-border rounded-lg bg-card p-4">
           <h3 className="text-sm font-semibold text-card-foreground mb-3">Recent Signups</h3>
           <div className="overflow-x-auto">
@@ -135,7 +155,6 @@ const Dashboard: React.FC = () => {
           </div>
         </div>
 
-        {/* Recent Transactions */}
         <div className="border border-border rounded-lg bg-card p-4">
           <h3 className="text-sm font-semibold text-card-foreground mb-3">Recent Transactions</h3>
           <div className="overflow-x-auto">
