@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import Navbar from '@/components/Navbar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { api } from '@/services/api';
 import { TemplateConfig, EventCategory } from '@/types';
@@ -43,17 +44,7 @@ const Gallery = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Nav */}
-      <nav className="border-b border-border bg-card/80 backdrop-blur-sm sticky top-0 z-50">
-        <div className="container flex items-center justify-between h-16">
-          <Link to="/" className="font-display text-xl font-bold">Shyara</Link>
-          <div className="flex items-center gap-4">
-            <Link to="/pricing" className="text-sm text-muted-foreground hover:text-foreground font-body hidden md:inline">Pricing</Link>
-            <Link to="/dashboard" className="text-sm text-muted-foreground hover:text-foreground font-body hidden md:inline">Dashboard</Link>
-            <Button asChild size="sm" variant="outline"><Link to="/login">Login</Link></Button>
-          </div>
-        </div>
-      </nav>
+      <Navbar />
 
       <div className="container py-10 px-4">
         <h1 className="font-display text-3xl md:text-4xl font-bold text-center mb-2">Template Gallery</h1>

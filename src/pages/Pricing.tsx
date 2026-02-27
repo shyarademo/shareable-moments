@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import Navbar from '@/components/Navbar';
 
 const faqs = [
   { q: 'Can I try before I pay?', a: 'Absolutely! You can browse and fully preview any template without creating an account. Only pay when you\'re ready to personalize.' },
@@ -16,15 +17,7 @@ const Pricing = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <nav className="border-b border-border bg-card/80 backdrop-blur-sm sticky top-0 z-50">
-        <div className="container flex items-center justify-between h-16">
-          <Link to="/" className="font-display text-xl font-bold">Shyara</Link>
-          <div className="flex items-center gap-4">
-            <Link to="/templates" className="text-sm text-muted-foreground font-body hover:text-foreground hidden md:inline">Templates</Link>
-            <Button asChild size="sm"><Link to="/templates">Get Started</Link></Button>
-          </div>
-        </div>
-      </nav>
+      <Navbar />
 
       <div className="container py-16 px-4">
         <h1 className="font-display text-3xl md:text-4xl font-bold text-center mb-2">Simple, Transparent Pricing</h1>

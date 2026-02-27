@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import Navbar from '@/components/Navbar';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -45,7 +46,9 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background px-4">
+    <div className="min-h-screen bg-background">
+      <Navbar />
+      <div className="flex items-center justify-center px-4 py-16 min-h-[calc(100vh-4rem)]">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <Link to="/" className="font-display text-2xl font-bold text-foreground">Shyara</Link>
@@ -81,6 +84,7 @@ const Login = () => {
           Don't have an account?{' '}
           <Link to="/register" className="text-primary hover:underline font-medium">Register</Link>
         </p>
+      </div>
       </div>
     </div>
   );
