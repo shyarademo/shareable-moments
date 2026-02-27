@@ -90,6 +90,29 @@ const ExecutiveEdge = ({ config, data, isPreview = false, inviteId }: Props) => 
             </motion.section>
           )}
 
+          {data.galleryPhotos?.length > 0 && (
+            <motion.section initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-80px' }} className="py-20 px-6 z-10 relative">
+              <div className="max-w-3xl mx-auto">
+                <motion.h2 custom={0} variants={fadeUp} className="font-display text-2xl font-bold mb-2" style={{ color: c.heading }}>Gallery</motion.h2>
+                <motion.div custom={1} variants={fadeUp} className="w-16 h-0.5 mb-10" style={{ background: c.accent }} />
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  {data.galleryPhotos.map((photo: string, i: number) => (
+                    <motion.div
+                      key={i}
+                      custom={i + 2}
+                      variants={fadeUp}
+                      whileHover={{ scale: 1.04 }}
+                      className="rounded-lg border overflow-hidden aspect-square transition-transform"
+                      style={{ background: c.bgCard, borderColor: c.border }}
+                    >
+                      <img src={photo} alt={`Gallery ${i + 1}`} className="w-full h-full object-cover" />
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
+            </motion.section>
+          )}
+
           {config.supportedSections.includes('rsvp') && inviteId && (
             <motion.section initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-80px' }} className="py-20 px-6">
               <div className="max-w-md mx-auto">
