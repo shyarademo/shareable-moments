@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import Navbar from '@/components/Navbar';
 
 const Register = () => {
   const [name, setName] = useState('');
@@ -51,7 +52,9 @@ const Register = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background px-4">
+    <div className="min-h-screen bg-background">
+      <Navbar />
+      <div className="flex items-center justify-center px-4 py-16 min-h-[calc(100vh-4rem)]">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <Link to="/" className="font-display text-2xl font-bold text-foreground">Shyara</Link>
@@ -95,6 +98,7 @@ const Register = () => {
           Already have an account?{' '}
           <Link to="/login" className="text-primary hover:underline font-medium">Sign In</Link>
         </p>
+      </div>
       </div>
     </div>
   );
