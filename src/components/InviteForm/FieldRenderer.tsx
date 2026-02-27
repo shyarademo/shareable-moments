@@ -10,10 +10,19 @@ interface FieldRendererProps {
   field: TemplateField;
   value: any;
   onChange: (key: string, value: any) => void;
+  error?: string;
+  touched?: boolean;
+  onBlur?: (key: string) => void;
 }
 
-const FieldRenderer = ({ field, value, onChange }: FieldRendererProps) => {
+const FieldRenderer = ({ field, value, onChange, error, touched, onBlur }: FieldRendererProps) => {
   const handleChange = (val: any) => onChange(field.key, val);
+  const handleBlur = () => onBlur?.(field.key);
+  const showError = touched && error;
+
+  const errorEl = showError ? (
+    <p className="text-[hsl(0,72%,51%)] text-xs mt-1 font-body">{error}</p>
+  ) : null;
 
   switch (field.type) {
     case 'text':
@@ -21,15 +30,17 @@ const FieldRenderer = ({ field, value, onChange }: FieldRendererProps) => {
         <div className="space-y-1.5">
           <Label className="font-body text-sm">
             {field.label}
-            {field.required && <span className="text-destructive ml-1">*</span>}
+            {field.required && <span className="text-[hsl(0,72%,51%)] ml-1">*</span>}
           </Label>
           <Input
             value={value || ''}
             onChange={e => handleChange(e.target.value)}
+            onBlur={handleBlur}
             placeholder={field.placeholder || field.label}
             maxLength={field.maxLength}
-            className="text-sm"
+            className={`text-sm ${showError ? 'border-[hsl(0,72%,51%)]' : ''}`}
           />
+          {errorEl}
         </div>
       );
 
@@ -38,16 +49,18 @@ const FieldRenderer = ({ field, value, onChange }: FieldRendererProps) => {
         <div className="space-y-1.5">
           <Label className="font-body text-sm">
             {field.label}
-            {field.required && <span className="text-destructive ml-1">*</span>}
+            {field.required && <span className="text-[hsl(0,72%,51%)] ml-1">*</span>}
           </Label>
           <Textarea
             value={value || ''}
             onChange={e => handleChange(e.target.value)}
+            onBlur={handleBlur}
             placeholder={field.placeholder || field.label}
             maxLength={field.maxLength}
             rows={4}
-            className="text-sm resize-none"
+            className={`text-sm resize-none ${showError ? 'border-[hsl(0,72%,51%)]' : ''}`}
           />
+          {errorEl}
         </div>
       );
 
@@ -56,14 +69,16 @@ const FieldRenderer = ({ field, value, onChange }: FieldRendererProps) => {
         <div className="space-y-1.5">
           <Label className="font-body text-sm">
             {field.label}
-            {field.required && <span className="text-destructive ml-1">*</span>}
+            {field.required && <span className="text-[hsl(0,72%,51%)] ml-1">*</span>}
           </Label>
           <Input
             type="date"
             value={value || ''}
             onChange={e => handleChange(e.target.value)}
-            className="text-sm"
+            onBlur={handleBlur}
+            className={`text-sm ${showError ? 'border-[hsl(0,72%,51%)]' : ''}`}
           />
+          {errorEl}
         </div>
       );
 
@@ -72,14 +87,16 @@ const FieldRenderer = ({ field, value, onChange }: FieldRendererProps) => {
         <div className="space-y-1.5">
           <Label className="font-body text-sm">
             {field.label}
-            {field.required && <span className="text-destructive ml-1">*</span>}
+            {field.required && <span className="text-[hsl(0,72%,51%)] ml-1">*</span>}
           </Label>
           <Input
             type="time"
             value={value || ''}
             onChange={e => handleChange(e.target.value)}
-            className="text-sm"
+            onBlur={handleBlur}
+            className={`text-sm ${showError ? 'border-[hsl(0,72%,51%)]' : ''}`}
           />
+          {errorEl}
         </div>
       );
 
@@ -88,15 +105,17 @@ const FieldRenderer = ({ field, value, onChange }: FieldRendererProps) => {
         <div className="space-y-1.5">
           <Label className="font-body text-sm">
             {field.label}
-            {field.required && <span className="text-destructive ml-1">*</span>}
+            {field.required && <span className="text-[hsl(0,72%,51%)] ml-1">*</span>}
           </Label>
           <Input
             type="number"
             value={value ?? ''}
             onChange={e => handleChange(e.target.value ? Number(e.target.value) : '')}
+            onBlur={handleBlur}
             placeholder={field.placeholder || field.label}
-            className="text-sm"
+            className={`text-sm ${showError ? 'border-[hsl(0,72%,51%)]' : ''}`}
           />
+          {errorEl}
         </div>
       );
 
@@ -105,15 +124,17 @@ const FieldRenderer = ({ field, value, onChange }: FieldRendererProps) => {
         <div className="space-y-1.5">
           <Label className="font-body text-sm">
             {field.label}
-            {field.required && <span className="text-destructive ml-1">*</span>}
+            {field.required && <span className="text-[hsl(0,72%,51%)] ml-1">*</span>}
           </Label>
           <Input
             type="url"
             value={value || ''}
             onChange={e => handleChange(e.target.value)}
+            onBlur={handleBlur}
             placeholder={field.placeholder || 'https://...'}
-            className="text-sm"
+            className={`text-sm ${showError ? 'border-[hsl(0,72%,51%)]' : ''}`}
           />
+          {errorEl}
         </div>
       );
 
@@ -121,10 +142,7 @@ const FieldRenderer = ({ field, value, onChange }: FieldRendererProps) => {
       return (
         <div className="flex items-center justify-between py-2">
           <Label className="font-body text-sm">{field.label}</Label>
-          <Switch
-            checked={!!value}
-            onCheckedChange={handleChange}
-          />
+          <Switch checked={!!value} onCheckedChange={handleChange} />
         </div>
       );
 
@@ -132,10 +150,7 @@ const FieldRenderer = ({ field, value, onChange }: FieldRendererProps) => {
       return (
         <div className="space-y-1.5">
           <Label className="font-body text-sm">{field.label}</Label>
-          <ImageUpload
-            value={value || null}
-            onChange={handleChange}
-          />
+          <ImageUpload value={value || null} onChange={handleChange} />
         </div>
       );
 
@@ -146,12 +161,7 @@ const FieldRenderer = ({ field, value, onChange }: FieldRendererProps) => {
             {field.label}
             {field.max && <span className="text-muted-foreground ml-1">(max {field.max})</span>}
           </Label>
-          <ImageUpload
-            value={value || []}
-            onChange={handleChange}
-            multiple
-            max={field.max || 10}
-          />
+          <ImageUpload value={value || []} onChange={handleChange} multiple max={field.max || 10} />
         </div>
       );
 
@@ -159,10 +169,7 @@ const FieldRenderer = ({ field, value, onChange }: FieldRendererProps) => {
       return (
         <div className="space-y-1.5">
           <Label className="font-body text-sm">{field.label}</Label>
-          <ScheduleEditor
-            value={value || []}
-            onChange={val => handleChange(val)}
-          />
+          <ScheduleEditor value={value || []} onChange={val => handleChange(val)} />
         </div>
       );
 
