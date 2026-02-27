@@ -6,8 +6,7 @@ import { api } from '@/services/api';
 import { TemplateConfig } from '@/types';
 import TemplateThumbnail from '@/components/TemplateThumbnail';
 import PhoneMockup from '@/components/PhoneMockup';
-import MobileNav from '@/components/MobileNav';
-import ThemeToggle from '@/components/ThemeToggle';
+import Navbar from '@/components/Navbar';
 import { allTemplates, getTemplatesByCategory } from '@/templates/registry';
 import {
   Eye, Sparkles, Smartphone, BarChart3, Link2, Palette, Gift,
@@ -70,7 +69,7 @@ const Home = () => {
   const [featuredLoading, setFeaturedLoading] = useState(true);
   const heroRef = useRef<HTMLDivElement>(null);
   const [showSticky, setShowSticky] = useState(false);
-  const [navScrolled, setNavScrolled] = useState(false);
+  
 
   const royalGold = allTemplates.find(t => t.slug === 'royal-gold')!;
   const floralGarden = allTemplates.find(t => t.slug === 'floral-garden');
@@ -100,36 +99,13 @@ const Home = () => {
     return () => obs.disconnect();
   }, []);
 
-  /* Nav scroll blur */
-  useEffect(() => {
-    const handler = () => setNavScrolled(window.scrollY > 20);
-    window.addEventListener('scroll', handler, { passive: true });
-    return () => window.removeEventListener('scroll', handler);
-  }, []);
 
   const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' });
 
   return (
     <div className="min-h-screen bg-background">
       {/* ═══════════════ NAV ═══════════════ */}
-      <nav className={`border-b border-border sticky top-0 z-50 transition-all duration-300 ${
-        navScrolled ? 'bg-card/95 backdrop-blur-md shadow-sm' : 'bg-card/60 backdrop-blur-sm'
-      }`}>
-        <div className="container flex items-center justify-between h-16">
-          <Link to="/" className="font-display text-xl font-bold text-foreground">Shyara</Link>
-          <div className="hidden md:flex items-center gap-6 text-sm font-body">
-            <Link to="/templates" className="text-muted-foreground hover:text-foreground transition-colors">Browse Templates</Link>
-            <Link to="/pricing" className="text-muted-foreground hover:text-foreground transition-colors">Pricing</Link>
-            <Link to="/login" className="text-muted-foreground hover:text-foreground transition-colors">Login</Link>
-            <ThemeToggle />
-            <Button asChild size="sm"><Link to="/templates">Get Started</Link></Button>
-          </div>
-          <div className="flex md:hidden items-center gap-2">
-            <ThemeToggle />
-            <MobileNav />
-          </div>
-        </div>
-      </nav>
+      <Navbar />
 
       {/* ═══════════════ HERO ═══════════════ */}
       <section ref={heroRef} className="relative py-20 md:py-32 px-6 overflow-hidden">
