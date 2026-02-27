@@ -29,6 +29,14 @@ const config: TemplateConfig = {
       { time: '3:00 PM', title: 'Workshops', description: 'Hands-on breakout sessions' },
     ],
     rsvpDeadline: '2026-09-01',
+    galleryPhotos: [
+      '/placeholder.svg',
+      '/placeholder.svg',
+      '/placeholder.svg',
+      '/placeholder.svg',
+      '/placeholder.svg',
+      '/placeholder.svg',
+    ],
   },
 };
 
