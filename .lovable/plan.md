@@ -1,70 +1,111 @@
-# UI Changes for Maximum Conversion & Information Accessibility
 
-## Problems Identified
 
-1. **Homepage hero is text-heavy, no visual proof** — no template preview or phone mockup showing what guests actually see
-2. **Featured templates on homepage show plain text, not TemplateThumbnail** — the thumbnails we built aren't used on the homepage
-3. **No sticky CTA or floating action** — users scroll through content without persistent conversion prompt
-4. **Gallery has no quick-preview** — users must navigate away to preview; no modal/lightbox option
-5. **No inline pricing info on homepage** — users must navigate to /pricing to learn it's affordable; "Starting Free" should be visible immediately
-6. **Checkout template summary shows plain text box instead of TemplateThumbnail**
-7. **No trust signals** — no "X invites created", "Y guests RSVPed" counters
-8. **Homepage "How It Works" is 5 columns — cramped on tablet, no icons** — emoji/icon-driven steps would convert better
-9. **No "See it in action" inline preview on homepage** — an embedded phone frame showing a real template would be a huge conversion driver
-10. **Category section is just chips** — adding a template count per category and mini-thumbnails would help
+# Implementation Plan: Complete Shyara Frontend (7 Items)
 
-## Implementation Plan
+## Scope Assessment
 
-### 1. Homepage Hero Overhaul
+- **14 template renderers** need unique implementations (currently re-export GenericRenderer)
+- **InviteCover** needs per-template animation variants
+- **InviteForm** needs multi-step wizard refactor
+- **Account page** needs functional password/avatar/notifications
+- **FieldRenderer** needs inline validation
+- **TemplateThumbnail** already has per-template themes — needs minor refinement to use config dummyData names instead of hardcoded names
 
-- Add a floating phone mockup on the right side showing a live template preview (Royal Gold thumbnail inside a phone frame CSS shape)
-- Add trust stats bar below hero CTAs: "5,000+ Invites Created · 50,000+ Guests RSVPed · 4.9★ Rating"
-- Add "Starting Free · No credit card needed" micro-copy below CTA buttons
+---
 
-### 2. Homepage Featured Templates — Use Real Thumbnails
+## Implementation Steps
 
-- Replace the plain `bg-muted` placeholder with `<TemplateThumbnail config={t} />` (already built, just not wired on homepage)
-- Add hover overlay with "Preview" and "Use This" buttons matching the gallery cards
+### ITEM 1+2: Template Renderers with Opening Animations (14 files)
 
-### 3. Inline Live Demo Section on Homepage
+Each renderer follows the same pattern as `royal-gold/index.tsx` and `midnight-bloom/index.tsx`: unique color palette object, custom animation variants, InviteCover with template-specific theme, and all sections (hero, story, schedule, venue, gallery, RSVP).
 
-- New section between Featured Templates and Categories: "See It In Action"
-- Embed a scaled-down phone frame with the Royal Gold template rendered inside (using GenericRenderer with dummy data, scaled via CSS transform)
-- Side text: "Your guests receive a stunning, animated invitation. Tap to open → Beautiful reveal → Event details → RSVP in seconds"
-- CTA: "Try the Live Demo →" linking to `/i/demo-invite`
+**InviteCover changes**: Add 11 new theme variants to `themeStyles` (pastel-floral, ivory-classic, rustic-warm, celestial-navy, golden-warm, rose-pink, neon-dark, star-blue, sweet-pink, corporate-dark, corporate-light, anniversary-warm). Update `localStorage` key to use `shyara_intro_seen_{slug}` per spec. Add `skipDelay` to 4 seconds (currently 2.5s).
 
-### 4. Sticky Mobile CTA Bar
+**New renderers** (each file `~150-250 lines`, unique identity):
 
-- Fixed bottom bar on mobile (hidden on desktop) with "Browse Templates" button — appears after scrolling past the hero
-- Uses `IntersectionObserver` on the hero section
+| Template | Color Palette | Animation Style |
+|---|---|---|
+| floral-garden | Sage green + blush pink, light bg | Petals parting reveal, botanical ornaments |
+| eternal-vows | Ivory + deep burgundy, cream bg | Curtain draw reveal, classic serif feel |
+| rustic-charm | Warm brown + olive, kraft-paper bg | Barn doors sliding open, handwritten feel |
+| celestial-dreams | Navy + gold stars, dark bg | Starfield zoom-out reveal, twinkling particles |
+| golden-ring | Warm gold + cream, light bg | Ring spin reveal, warm elegance |
+| rose-garden | Dusty rose + sage, soft pink bg | Rose petals falling away reveal |
+| neon-glow | Cyan neon + purple, dark bg | Neon flicker-on reveal, glow effects |
+| little-star | Soft blue + yellow stars, pastel bg | Star twinkle reveal, gentle animations |
+| sweet-arrival | Pastel pink + mint, soft bg | Envelope unfold reveal, cute motifs |
+| executive-edge | Dark navy + electric blue, dark bg | Clean slide-up reveal, geometric |
+| modern-summit | White + bright blue, clean bg | Fade-scale reveal, minimal |
+| timeless-love | Warm sepia + burgundy, warm bg | Photo album page-turn reveal |
 
-### 5. Gallery Quick-Preview Modal
+Each renderer imports `InviteCover` and `InviteRsvpForm`, defines its own color constants, animation variants, decorative components (dividers, particles, ornaments), and renders all supported sections from config.
 
-- Add a "Quick Look" eye icon button on each gallery card
-- Opens a dialog/sheet showing the template rendered at mobile size inside a phone frame, with "Use This Template" CTA — without navigating away from gallery
+### ITEM 3+4: Multi-Step Wizard
 
-### 6. Homepage Category Cards Upgrade
+**Refactor `src/components/InviteForm/index.tsx`:**
 
-- Replace plain chips with cards showing: category emoji, name, template count (e.g., "5 templates"), and 3 mini-thumbnail dots as visual preview
+- Add `currentStep` state (0-3)
+- Define 4 steps: `['Event Details', 'Venue & Story', 'Media & Schedule', 'Review & Publish']`
+- Map config field sections to steps:
+  - Step 0: fields where `section === 'basic'`
+  - Step 1: fields where `section === 'venue' || section === 'story'`
+  - Step 2: fields where `section === 'gallery' || section === 'schedule' || section === 'settings'`
+  - Step 3: Live preview + SlugPicker + publish
+- Step indicator bar at top with numbered circles, step names, connecting lines, active/completed states
+- "Previous" / "Next" buttons replace current layout; "Save Draft" on every step; "Publish" only on step 3
+- Next button validates only current step's required fields before advancing
+- Step 3 shows full template renderer with mobile/desktop toggle using PhoneMockup for mobile view
+- Form data preserved in `formData` state across steps (already works this way)
 
-### 7. Trust & Urgency Signals Throughout
+### ITEM 5: Template Thumbnails
 
-- Add animated counter stats section on homepage (Total Invites Created, Happy Couples, Guest RSVPs)
-- Add "Most Popular" badge on the most-used template in gallery
-- Add "Free templates available" callout banner at top of gallery
+**Update `TemplateThumbnail.tsx`:**
+- Use `config.dummyData` to extract real names instead of hardcoded "Sarah & Aryan" etc.
+- Add the same name extraction logic as GenericRenderer's `getTitle()`
 
-### 8. Checkout Page — Use TemplateThumbnail
+### ITEM 6: Account Page
 
-- Replace the plain text placeholder in checkout's template summary with `<TemplateThumbnail config={template} />`
+**Update `src/pages/Account.tsx`:**
+- **Password**: Add `currentPassword`, `newPassword`, `confirmPassword` state. Validate: current not empty, new >= 8 chars, confirm matches. Show inline red error text. Toast on success.
+- **Avatar**: Add hidden `<input type="file" accept="image/*">` ref. On select, use `URL.createObjectURL` + save base64 via FileReader to `localStorage('shyara_avatar')`. Read on mount.
+- **Notifications**: Read/write toggle states from `localStorage('shyara_notif_rsvp')` and `localStorage('shyara_notif_weekly')`.
 
-### 9. Pricing Teaser on Homepage
+### ITEM 7: Inline Form Validation
 
-- Add a compact pricing section before the final CTA: "Free templates forever. Premium from just ₹199." with a link to /pricing
+**Update `FieldRenderer.tsx`:**
+- Add `touched` state per field (set on blur)
+- Add `error` prop passed from parent
+- Show red error message below field when touched and error exists
+- Clear error on change
 
-### Files to Edit
+**Update `InviteForm/index.tsx`:**
+- Add `errors` state and `touched` state
+- `validateStep(step)` function: checks required fields for current step, date-in-future for date fields, RSVP deadline before event date
+- On "Next" click: mark all current step fields as touched, run validateStep, block if errors
+- Pass error strings to FieldRenderer
 
-- `src/pages/Home.tsx` — Hero with phone mockup, trust stats, real thumbnails, inline demo section, category upgrade, pricing teaser, sticky mobile CTA
-- `src/pages/Gallery.tsx` — Quick-preview dialog, free banner, popular badge
-- `src/pages/Checkout.tsx` — Use TemplateThumbnail in summary
-- `src/components/PhoneMockup.tsx` — New reusable phone frame component
-- `src/components/QuickPreview.tsx` — New gallery quick-look dialog
+---
+
+## Files to Create/Edit
+
+**Create (14 template renderers):**
+- `src/templates/wedding/floral-garden/index.tsx`
+- `src/templates/wedding/eternal-vows/index.tsx`
+- `src/templates/wedding/rustic-charm/index.tsx`
+- `src/templates/wedding/celestial-dreams/index.tsx`
+- `src/templates/engagement/golden-ring/index.tsx`
+- `src/templates/engagement/rose-garden/index.tsx`
+- `src/templates/birthday/neon-glow/index.tsx`
+- `src/templates/baby-shower/little-star/index.tsx`
+- `src/templates/baby-shower/sweet-arrival/index.tsx`
+- `src/templates/corporate/executive-edge/index.tsx`
+- `src/templates/corporate/modern-summit/index.tsx`
+- `src/templates/anniversary/timeless-love/index.tsx`
+
+**Edit:**
+- `src/components/InviteCover.tsx` — add theme variants, update localStorage key, 4s skip delay
+- `src/components/InviteForm/index.tsx` — multi-step wizard with step indicator, validation, step 4 preview
+- `src/components/InviteForm/FieldRenderer.tsx` — inline validation display
+- `src/components/TemplateThumbnail.tsx` — use dummyData names
+- `src/pages/Account.tsx` — functional password/avatar/notifications
+
