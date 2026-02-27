@@ -41,7 +41,7 @@ const AdminSidebar: React.FC = () => {
   };
 
   return (
-    <aside className="w-60 min-h-screen flex flex-col border-r border-border" style={{ background: 'hsl(220 20% 10%)' }}>
+    <aside className="w-60 h-screen sticky top-0 flex flex-col border-r border-border" style={{ background: 'hsl(220 20% 10%)' }}>
       {/* Logo */}
       <div className="px-4 py-4 border-b" style={{ borderColor: 'hsl(220 15% 18%)' }}>
         <h1 className="text-base font-bold font-body" style={{ color: 'hsl(0 0% 95%)' }}>Shyara Admin</h1>
